@@ -22,14 +22,23 @@ repositories {
     mavenLocal()
 }
 
+repositories {
+    maven {
+        url "https://cursemaven.com/"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+}
+
 base {
-    archivesName = mod_id
+    archivesName = mod_id + "-neoforge-" + minecraft_version
 }
 
 // Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-//minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
 //minecraft.accessTransformers.entry public net.minecraft.client.Minecraft textureManager # textureManager
 
 // Default run configurations.
@@ -98,6 +107,8 @@ dependencies {
     // For all intends and purposes: You can treat this dependency as if it is a normal library you would use.
     implementation "net.neoforged:neoforge:${neo_version}"
 
+
+    implementation("curse.maven:mekanism-268560:6018306")
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
