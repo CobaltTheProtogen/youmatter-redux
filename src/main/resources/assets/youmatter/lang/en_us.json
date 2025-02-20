@@ -1,12 +1,12 @@
 {
   "_comment": "Blocks",
   "block.youmatter.replicator": "Replicator",
-  "block.youmatter.creator": "U-Matter Creator",
+  "block.youmatter.producer": "Matter Producer",
   "block.youmatter.encoder": "Encoder",
   "block.youmatter.scanner": "Scanner",
 
   "_comment": "Items",
-  "item.youmatter.thumb_drive": "Thumb Drive",
+  "item.youmatter.thumb_drive_8": "Thumb Drive",
   "item.youmatter.black_hole": "Portable Black Hole",
   "item.youmatter.compute_module": "Compute Module",
   "item.youmatter.machine_casing": "Machine Casing",
@@ -26,13 +26,11 @@
   "_comment": "Item Tooltips",
   "youmatter.tooltip.craftingItemEndCities": "§7Crafting Item. Can be duplicated in Crafting Table.",
   "youmatter.tooltip.craftingItem": "§7Crafting Item.",
-  "youmatter.tooltip.dataStored": "§5Data stored.",
-  "youmatter.tooltip.noDataStored": "§cNo Data stored.",
-  "youmatter.tooltip.remainingSpace": "(%s/%s KB used)",
+  "youmatter.tooltip.remainingSpace": "(%s KB free of %s KB)",
 
   "_comment": "Names of the machines displayed in the GUI",
   "youmatter.guiname.encoder": "Encoder",
-  "youmatter.guiname.creator": "U-Matter Creator",
+  "youmatter.guiname.producer": "Matter Producer",
   "youmatter.guiname.replicator": "Replicator",
   "youmatter.guiname.scanner": "Scanner",
 
@@ -56,5 +54,6 @@
   "youmatter.gui.performInfiniteRuns": "§6Perform infinite runs",
   "youmatter.gui.performSingleRun": "§6Perform single run",
   "gui.youmatter.requiredAmount": "§aRequired Amount: %s mB",
-  "itemGroup.YouMatter": "YouMatter"
+  "itemGroup.YouMatter": "YouMatter Redux",
+  "youmatter.gui.scans.description": "Scans: %s of %s"
 }
