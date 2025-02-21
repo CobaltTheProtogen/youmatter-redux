@@ -1,7 +1,6 @@
 package com.kobaltromero.youmatter_redux.encoder;
 
 import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -14,9 +13,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -140,41 +137,55 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
     public void tick(Level level, BlockPos pos, BlockState state) {
         if (queue.size() > 0) {
             ItemStack processIS = queue.get(queue.size() - 1);
-            if (!processIS.isEmpty()) {
+            if (processIS != ItemStack.EMPTY) {
                 if (inventory != null) {
-                    ItemStack thumbDriveStack = inventory.getStackInSlot(1);
+                    if (inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem thumb) {
+                        ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
+                        if (contents != null) {
+                            List<ItemStack> list = new ArrayList<>();
+                            for (ItemStack stack : contents.nonEmptyItems()) {
+                                list.add(stack);
+                            }
 
-                    if (thumbDriveStack.getItem() instanceof ThumbDriveItem thumb) {
-                        if (progress < 100) {
-                            if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
-                                ThumbDriveContents contents = thumbDriveStack.get(ModContent.THUMBDRIVE_CONTAINER.get());
-
-                                if (contents == null) {
-                                    // Create NEW ThumbDriveContents if it's null
-                                    contents = new ThumbDriveContents(new Int2ObjectArrayMap<>());
+                            // Check for duplicate item before adding
+                            boolean encoded = false;
+                            for (ItemStack encodedStack : list) {
+                                if (ItemStack.isSameItem(encodedStack, processIS)) {
+                                    encoded = true;
+                                    break; // Found a duplicate, exit loop
                                 }
+                            }
 
-                                int itemCount = contents.getSlots();
-
-                                if (itemCount < thumb.getMaxStorageInKb()) {
+                            if (!encoded) { // Only proceed if the item is not already encoded.
+                                if (list.size() < thumb.getMaxStorageInKb()) { // Use thumb.getMaxStorageInKb()
+                                    if (progress < 100) {
+                                        if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
+                                            progress++;
+                                            myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
+                                        }
+                                    } else {
+                                        list.add(processIS);
+                                        ThumbDriveContents newContents = ThumbDriveContents.fromItems(list);
+                                        inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER.get(), newContents);
+                                        queue.remove(processIS);
+                                        progress = 0;
+                                    }
+                                }
+                            } else {
+                                queue.remove(processIS); // Remove from the queue to prevent infinite loop.
+                                progress = 0;
+                            }
+                        } else { // Contents is null (empty thumb drive)
+                            if (progress < 100) {
+                                if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
                                     progress++;
                                     myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
                                 }
-                            }
-                        } else { // Progress complete
-                            ThumbDriveContents contents = thumbDriveStack.get(ModContent.THUMBDRIVE_CONTAINER.get());
-
-                            if (contents == null) {
-                                // Create NEW ThumbDriveContents if it's null
-                                contents = new ThumbDriveContents(new Int2ObjectArrayMap<>());
-                            }
-
-                            Item itemToAdd = processIS.getItem();
-                            int nextAvailableSlot = findNextAvailableSlot(contents, thumb);
-
-                            if (nextAvailableSlot != -1) {
-                                contents.setItem(nextAvailableSlot, itemToAdd);
-                                thumbDriveStack.set(ModContent.THUMBDRIVE_CONTAINER.get(), contents); // VERY IMPORTANT: Set the contents back to the stack
+                            } else {
+                                List<ItemStack> list = new ArrayList<>();
+                                list.add(processIS);
+                                ThumbDriveContents newContents = ThumbDriveContents.fromItems(list);
+                                inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER.get(), newContents);
                                 queue.remove(processIS);
                                 progress = 0;
                             }
@@ -183,15 +194,6 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
                 }
             }
         }
-    }
-
-    private int findNextAvailableSlot(ThumbDriveContents contents, ThumbDriveItem thumb){
-        for(int i = 0; i < thumb.getMaxStorageInKb(); i++){
-            if(contents.getItem(i) == Items.AIR){
-                return i;
-            }
-        }
-        return -1;
     }
 
     @Override

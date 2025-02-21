@@ -12,7 +12,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.BucketItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -187,62 +186,55 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         if (currentPartTick == 5) {
             currentPartTick = 0;
             if (inventory != null) {
-
-                // Fluid Handling (Slot 3 and 4)
-                ItemStack inputFluidBucket = inventory.getStackInSlot(3);
-                if (!inputFluidBucket.isEmpty()) {
-                    if (inputFluidBucket.getItem() instanceof BucketItem && GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(4), new ItemStack(Items.BUCKET), false)) {
-                        IFluidHandlerItem fluidHandler = inputFluidBucket.getCapability(Capabilities.FluidHandler.ITEM);
-                        if (fluidHandler != null && !fluidHandler.getFluidInTank(0).isEmpty() && fluidHandler.getFluidInTank(0).getFluid().isSame(ModContent.UMATTER.get())) {
-                            int umatterAmount = 1000;
-                            if (MAX_UMATTER - getTank().getFluidAmount() >= umatterAmount) {
-                                getTank().fill(new FluidStack(ModContent.UMATTER.get(), umatterAmount), IFluidHandler.FluidAction.EXECUTE);
-                                inputFluidBucket.shrink(1); // Use shrink() instead of setting to EMPTY
-                                inventory.insertItem(4, new ItemStack(Items.BUCKET), false);
+                if (!inventory.getStackInSlot(3).isEmpty()) {
+                    ItemStack item = inventory.getStackInSlot(3);
+                    if (item.getItem() instanceof BucketItem && GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(4), new ItemStack(Items.BUCKET, 1), false)) {
+                        IFluidHandlerItem h = item.getCapability(Capabilities.FluidHandler.ITEM);
+                        if (h != null && !h.getFluidInTank(0).isEmpty() && h.getFluidInTank(0).getFluid().isSame(ModContent.UMATTER.get())) {
+                            if (MAX_UMATTER - getTank().getFluidAmount() >= 1000) {
+                                getTank().fill(new FluidStack(ModContent.UMATTER.get(), 1000), IFluidHandler.FluidAction.EXECUTE);
+                                inventory.setStackInSlot(3, ItemStack.EMPTY);
+                                inventory.insertItem(4, new ItemStack(Items.BUCKET, 1), false);
                             }
                         }
-                    } else if (GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(4), inputFluidBucket, false)) { //Check if can add the stack
-                        IFluidHandlerItem fluidHandler = inputFluidBucket.getCapability(Capabilities.FluidHandler.ITEM);
-                        if (fluidHandler != null && !fluidHandler.getFluidInTank(0).getFluid().isSame(ModContent.UMATTER.get())) {
-                            int availableSpace = MAX_UMATTER - getTank().getFluidAmount();
-                            int fluidAmountToFill = Math.min(fluidHandler.getFluidInTank(0).getAmount(), availableSpace);
-
-                            if (fluidAmountToFill > 0) {
-                                getTank().fill(fluidHandler.drain(fluidAmountToFill, IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
+                    } else if (GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(4), inventory.getStackInSlot(3), false)) {
+                        IFluidHandlerItem h = item.getCapability(Capabilities.FluidHandler.ITEM);
+                        if (h != null && h.getFluidInTank(0).getFluid().isSame(ModContent.UMATTER.get())) {
+                            if (h.getFluidInTank(0).getAmount() > MAX_UMATTER - getTank().getFluidAmount()) {
+                                getTank().fill(h.drain(MAX_UMATTER - getTank().getFluidAmount(), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
+                            } else {
+                                getTank().fill(h.drain(h.getFluidInTank(0).getAmount(), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
                             }
                         }
                     }
+                    inventory.setStackInSlot(3, ItemStack.EMPTY);
+                    inventory.insertItem(4, item, false);
                 }
 
-
-                // ThumbDrive Handling (Slot 0, 1, and 2)
-                ItemStack thumbDriveStack = inventory.getStackInSlot(0);
-
-                if (thumbDriveStack.isEmpty() || !thumbDriveStack.has(ModContent.THUMBDRIVE_CONTAINER.get())) {
+                ItemStack thumbdrive = inventory.getStackInSlot(0);
+                if (thumbdrive.isEmpty()) {
                     inventory.setStackInSlot(2, ItemStack.EMPTY);
                     cachedItems = null;
                     currentIndex = 0;
                     progress = 0;
-                    currentItem = ItemStack.EMPTY; // Clear currentItem
                 } else {
-                    ThumbDriveContents contents = thumbDriveStack.get(ModContent.THUMBDRIVE_CONTAINER.get());
-                    cachedItems = new ArrayList<>();
-
-                    if (contents != null) {
-                        for (Item item : contents.nonEmptyItems()) { // Iterate through Items
-                            cachedItems.add(new ItemStack(item)); // Create ItemStacks for rendering
+                    if (thumbdrive.has(ModContent.THUMBDRIVE_CONTAINER.get())) {
+                        ThumbDriveContents contents = thumbdrive.get(ModContent.THUMBDRIVE_CONTAINER.get());
+                        cachedItems = new ArrayList<>();
+                        if (contents != null) {
+                            for (ItemStack stack : contents.nonEmptyItems()) {
+                                if (stack != null) {
+                                    cachedItems.add(stack.copy());
+                                }
+                            }
+                            renderItem(cachedItems, currentIndex);
                         }
-                        renderItem(cachedItems, currentIndex);
                     }
                 }
-
-                // Replication Logic
                 if (progress == 0) {
-                    ItemStack outputSlot = inventory.getStackInSlot(2);
-                    if (!outputSlot.isEmpty()) { // Check if output slot is not empty
-                        if (isActive && cachedItems != null && currentIndex < cachedItems.size()) { //Check if cachedItems isn't null
+                    if (!inventory.getStackInSlot(2).isEmpty()) {
+                        if (isActive) {
                             currentItem = cachedItems.get(currentIndex);
-
                             if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get() && tank.getFluidAmount() >= GeneralUtils.getUMatterAmountForItem(currentItem.getItem())) {
                                 tank.drain(GeneralUtils.getUMatterAmountForItem(currentItem.getItem()), IFluidHandler.FluidAction.EXECUTE);
                                 progress++;
@@ -252,39 +244,31 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                     }
                 } else if (isActive) {
                     if (progress >= 100) {
-                        ItemStack outputSlot = inventory.getStackInSlot(2); // Get output slot
-
-                        if (!outputSlot.isEmpty() && !ItemStack.isSameItem(currentItem, outputSlot)) { //Check if there is a different item in the slot
-                            isActive = !currentMode; // Toggle isActive based on currentMode
-                            progress = 0;
-                        } else {
-                            if (inventory.insertItem(1, currentItem.copy(), false).isEmpty()) { //Use insertItem and copy
-                                if (!currentMode) {
-                                    isActive = false;
-                                }
-                                progress = 0;
-                                currentIndex++; // Increment index after successful replication
-                                if(currentIndex >= cachedItems.size()){ //Reset the index if it has reached the end of the list
-                                    currentIndex = 0;
+                        if (!inventory.getStackInSlot(2).isEmpty()) {
+                            if (!currentMode) {
+                                isActive = false;
+                            }
+                            inventory.insertItem(1, currentItem, false);
+                        }
+                        progress = 0;
+                    } else if (currentItem != null) {
+                        if(!currentItem.isEmpty()) {
+                            if (ItemStack.isSameItem(currentItem, inventory.getStackInSlot(2)) && (inventory.getStackInSlot(1).isEmpty() || GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(1), currentItem, false))) {
+                                if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get()) {
+                                    progress++;
+                                    myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
                                 }
                             }
-                        }
-                    } else if (!currentItem.isEmpty()) {
-                        ItemStack outputSlot = inventory.getStackInSlot(2); // Get output slot
-
-                        if (!outputSlot.isEmpty() && !ItemStack.isSameItem(currentItem, outputSlot)) { //Check if there is a different item in the slot
-                            progress = 0;
-                        } else if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get()) {
-                            progress++;
-                            myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
                         }
                     } else {
                         progress = 0;
                     }
+                } else if (cachedItems != null && currentIndex < cachedItems.size()) {
+                    currentItem = cachedItems.get(currentIndex);
                 }
             }
-            currentPartTick++;
         }
+        currentPartTick++;
     }
 
     public void renderPrevious() {
