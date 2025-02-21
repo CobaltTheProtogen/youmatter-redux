@@ -34,6 +34,7 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 
     public boolean hasEncoder = false;
     private int scans = 0;
+    private Item storedItem = null;  // Add this line
 
     public ScannerBlockEntity(BlockPos pos, BlockState state) {
         super(ModContent.SCANNER_BLOCK_ENTITY.get(), pos, state);
@@ -64,7 +65,6 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
             return stack;
         }
     };
-
 
     private int progress = 0;
 
@@ -158,25 +158,33 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
                 ItemStack currentItem = inventory.getStackInSlot(1);
 
                 if (!currentItem.isEmpty() && isItemAllowed(currentItem)) {
-                    if (getEnergy() > YMConfig.CONFIG.energyScanner.get()) {
-                        if (getProgress() < 100) {
-                            setProgress(getProgress() + 1);
-                            myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyScanner.get(), false);
-                        } else {
-                            setProgress(0);
-                            scans++;
-                            currentItem.shrink(1); // Decrement item count by 1
+                    if (storedItem == null) {
+                        storedItem = currentItem.getItem();  // Store the item being scanned
+                    }
 
-                            if (scans >= getScansRequired(currentItem.getItem())) {
-                                // Notifying the neighboring encoder of this scanner having finished its operation
-                                ((EncoderBlockEntity)level.getBlockEntity(encoderPos)).ignite(new ItemStack(currentItem.getItem(), 1)); // Transmit 1 item to the encoder
-                                scans = 0;
+                    if (currentItem.getItem() == storedItem) {  // Continue scanning only if the same item is present
+                        if (getEnergy() > YMConfig.CONFIG.energyScanner.get()) {
+                            if (getProgress() < 100) {
+                                setProgress(getProgress() + 1);
+                                myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyScanner.get(), false);
+                            } else {
+                                setProgress(0);
+                                scans++;
+                                currentItem.shrink(1); // Decrement item count by 1
+
+                                if (scans >= getScansRequired(currentItem.getItem())) {
+                                    // Notifying the neighboring encoder of this scanner having finished its operation
+                                    ((EncoderBlockEntity)level.getBlockEntity(encoderPos)).ignite(new ItemStack(currentItem.getItem(), 1)); // Transmit 1 item to the encoder
+                                    scans = 0;
+                                    storedItem = null;  // Reset the stored item after completing the scan
+                                }
                             }
                         }
+                    } else {
+                        setProgress(0); // if item was changed, reset progress to 0
+                        scans = 0;
+                        storedItem = currentItem.getItem();  // Update the stored item if the item changes
                     }
-                } else {
-                    setProgress(0); // if item was suddenly removed or changed, reset progress to 0
-                    scans = 0;
                 }
             }
         } else {

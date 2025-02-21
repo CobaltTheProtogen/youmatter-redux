@@ -135,56 +135,48 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
-        if (queue.isEmpty() || inventory == null || myEnergyStorage.getEnergyStored() <= 0) {
-            return;
-        }
-
-        ItemStack processIS = queue.get(queue.size() - 1);
-        if (processIS == ItemStack.EMPTY) {
-            return;
-        }
-
-        if (!(inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem)) {
-            return;
-        }
-
-        ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER);
-
-        List<ItemStack> list = new ArrayList<>();
-        for (ItemStack stack : contents.nonEmptyItems()) {
-            list.add(stack);
-        }
-
-        // Check if the item is already encoded on the thumb drive
-        boolean isItemAlreadyEncoded = false;
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getItem() == processIS.getItem()) {
-                isItemAlreadyEncoded = true;
-                break;
+        if (!queue.isEmpty()) {
+            ItemStack processIS = queue.get(queue.size() - 1);
+            if (processIS != ItemStack.EMPTY && inventory != null) {
+                if (inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem thumb) {
+                    if (progress < 100) {
+                        if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
+                            ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
+                            if (contents != null) {
+                                List<ItemStack> list = new ArrayList<>();
+                                for (ItemStack stack : contents.nonEmptyItems()) {
+                                    list.add(stack);
+                                }
+                                if (list.size() < thumb.getMaxStorageInKb()) {
+                                    progress++;
+                                    myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
+                                }
+                            } else {
+                                progress++;
+                                myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
+                            }
+                        }
+                    } else {
+                        ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
+                        if (contents != null) {
+                            List<ItemStack> list = new ArrayList<>();
+                            for (ItemStack stack : contents.nonEmptyItems()) {
+                                list.add(stack);
+                            }
+                            ThumbDriveContents newContents = ThumbDriveContents.fromItems(list);
+                            list.add(processIS);
+                            inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER, newContents);
+                        }
+                        queue.remove(processIS);
+                        progress = 0;
+                    }
+                }
             }
-        }
-
-        if (isItemAlreadyEncoded) {
-            // If the item is already encoded, remove it from the queue and return
-            queue.remove(processIS);
-            return;
-        }
-
-        if (progress < 100 && myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyEncoder.get() && list.size() < 8) {
-            progress++;
-            myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
-        } else if (progress >= 100) {
-            // Update the container with the new contents
-            list.add(processIS);
-            ThumbDriveContents newContents = ThumbDriveContents.fromItems(list);
-            inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER.get(), newContents);
-            queue.remove(processIS);
-            progress = 0;
         }
     }
 
     @Override
-    public Component getDisplayName() {
+    public @NotNull Component getDisplayName() {
         return Component.translatable(ModContent.ENCODER_BLOCK.get().getDescriptionId());
     }
 
