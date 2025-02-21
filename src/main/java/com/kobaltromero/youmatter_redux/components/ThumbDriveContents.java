@@ -50,7 +50,7 @@ public final class ThumbDriveContents {
 
     private void setItem(int index, ItemStack itemStack) {
         if (!itemStack.isEmpty() && itemStack.getCount() > 1) {
-            throw new IllegalArgumentException("Each slot can only contain one item regardless of stack size");
+            throw new IllegalArgumentException("Each slot can only contain one stackable item");
         }
         this.items.set(index, itemStack);
     }

@@ -135,40 +135,47 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
-        if (!queue.isEmpty()) {
+        if (queue.size() > 0) {
             ItemStack processIS = queue.get(queue.size() - 1);
-            if (processIS != ItemStack.EMPTY && inventory != null) {
-                if (inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem thumb) {
-                    if (progress < 100) {
-                        if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
-                            ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
-                            if (contents != null) {
-                                List<ItemStack> list = new ArrayList<>();
-                                for (ItemStack stack : contents.nonEmptyItems()) {
-                                    list.add(stack);
-                                }
-                                if (list.size() < thumb.getMaxStorageInKb()) {
+            if (processIS != ItemStack.EMPTY) {
+                if (inventory != null) {
+                    if (inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem thumb) {
+                        if (progress < 100) {
+                            if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
+                                ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
+                                if (contents != null) {
+                                    List<ItemStack> list = new ArrayList<>();
+                                    for (ItemStack stack : contents.nonEmptyItems()) {
+                                        list.add(stack);
+                                    }
+                                    if (list.size() < thumb.getMaxStorageInKb()) {
+                                        progress++;
+                                        myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
+                                    }
+                                } else {
                                     progress++;
                                     myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
                                 }
+                            }
+                        } else {
+                            ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
+                            if (contents != null) {
+                                List<ItemStack> list = new ArrayList<>();
+                                for(ItemStack stack : contents.nonEmptyItems()) {
+                                    list.add(stack);
+                                    list.add(processIS);
+                                    ThumbDriveContents newContents = ThumbDriveContents.fromItems(list);
+                                    inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER.get(), newContents);
+                                }
                             } else {
-                                progress++;
-                                myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
+                                List<ItemStack> list = new ArrayList<>();
+                                list.add(processIS);
+                                ThumbDriveContents newContents = ThumbDriveContents.fromItems(list);
+                                inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER.get(), newContents);
                             }
+                            queue.remove(processIS);
+                            progress = 0;
                         }
-                    } else {
-                        ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
-                        if (contents != null) {
-                            List<ItemStack> list = new ArrayList<>();
-                            for (ItemStack stack : contents.nonEmptyItems()) {
-                                list.add(stack);
-                            }
-                            ThumbDriveContents newContents = ThumbDriveContents.fromItems(list);
-                            list.add(processIS);
-                            inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER, newContents);
-                        }
-                        queue.remove(processIS);
-                        progress = 0;
                     }
                 }
             }
