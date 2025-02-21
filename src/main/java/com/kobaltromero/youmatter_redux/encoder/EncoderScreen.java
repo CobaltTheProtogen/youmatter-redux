@@ -45,25 +45,27 @@ public class EncoderScreen extends AbstractContainerScreen<EncoderMenu> {
         int xAxis = (mouseX - (width - WIDTH) / 2);
         int yAxis = (mouseY - (height - HEIGHT) / 2);
 
-        if(xAxis >= 141 && xAxis <= 156 && yAxis >= 37 && yAxis <= 57) {
-            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(I18n.get("youmatter.gui.energy.title")), Component.literal(I18n.get("youmatter.gui.energy.description", encoder.getEnergy()))));
+        if (xAxis >= 141 && xAxis <= 156 && yAxis >= 37 && yAxis <= 57) {
+            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(
+                    Component.literal(I18n.get("youmatter.gui.energy.title")),
+                    Component.literal(I18n.get("youmatter.gui.energy.description", encoder.getEnergy()))));
         }
+
         if (xAxis >= 16 && xAxis <= 32 && yAxis >= 59 && yAxis <= 75) {
             if (encoder.inventory != null) {
                 ItemStackHandler inventory = encoder.inventory;
-                if (inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem thumb) {
-                    ThumbDriveContents contents = encoder.inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
+                ItemStack thumbDriveStack = inventory.getStackInSlot(1); // Get the ThumbDrive ItemStack
+
+                if (!thumbDriveStack.isEmpty() && thumbDriveStack.getItem() instanceof ThumbDriveItem thumb) { //Check if there is a thumbdrive
+                    ThumbDriveContents contents = thumbDriveStack.get(ModContent.THUMBDRIVE_CONTAINER.get());
+
                     if (contents != null) {
-                        List<ItemStack> list = new ArrayList<>();
-                        for (ItemStack stack : contents.nonEmptyItems()) {
-                            list.add(stack);
-                        }
-                        if (list.size() >= thumb.getMaxStorageInKb()) {
+                        int itemCount = contents.getSlots(); // Use getSlots() now
+                        if (itemCount >= thumb.getMaxStorageInKb()) {
                             drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(I18n.get("youmatter.warning.encoder2"))));
                         }
                     }
-
-                    return; //only draw the warning tooltip if the inventory is not present, or there is no thumbdrive inserted
+                    return; // Only draw the warning tooltip if the inventory is present and a thumbdrive is inserted
                 }
             }
 
@@ -83,18 +85,17 @@ public class EncoderScreen extends AbstractContainerScreen<EncoderMenu> {
         drawEnergyBolt(guiGraphics, encoder.getEnergy());
         drawProgressDisplayChain(guiGraphics, encoder.getProgress());
 
-        if(encoder.inventory != null) {
-            if (!(encoder.inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem thumb)) {
-                guiGraphics.blit(GUI, 16, 59, 176, 66, 16, 16);
+        if (encoder.inventory != null) {
+            ItemStack thumbDriveStack = encoder.inventory.getStackInSlot(1); // Get the ThumbDrive ItemStack
+
+            if (thumbDriveStack.isEmpty() || !(thumbDriveStack.getItem() instanceof ThumbDriveItem thumb)) { // Check for empty or not a ThumbDrive
+                guiGraphics.blit(GUI, 16, 59, 176, 66, 16, 16); // Draw the "no ThumbDrive" overlay
             } else {
-                ThumbDriveContents contents = encoder.inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
+                ThumbDriveContents contents = thumbDriveStack.get(ModContent.THUMBDRIVE_CONTAINER.get());
                 if (contents != null) {
-                    List<ItemStack> list = new ArrayList<>();
-                    for (ItemStack stack : contents.nonEmptyItems()) {
-                        list.add(stack);
-                    }
-                    if (list.size() >= thumb.getMaxStorageInKb()) {
-                        guiGraphics.blit(GUI, 16, 59, 176, 66, 16, 16);
+                    int itemCount = contents.getSlots(); // Use getSlots()
+                    if (itemCount >= thumb.getMaxStorageInKb()) {
+                        guiGraphics.blit(GUI, 16, 59, 176, 66, 16, 16); // Draw the "full" overlay
                     }
                 }
             }
