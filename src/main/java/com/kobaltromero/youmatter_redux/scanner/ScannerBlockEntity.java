@@ -156,13 +156,11 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
             hasEncoder = true;
             if (inventory != null) {
                 ItemStack currentItem = inventory.getStackInSlot(1);
-
                 if (!currentItem.isEmpty() && isItemAllowed(currentItem)) {
                     if (storedItem == null) {
-                        storedItem = currentItem.getItem();  // Store the item being scanned
+                        storedItem = currentItem.getItem();
                     }
-
-                    if (currentItem.getItem() == storedItem) {  // Continue scanning only if the same item is present
+                    if (currentItem.getItem() == storedItem) {
                         if (getEnergy() > YMConfig.CONFIG.energyScanner.get()) {
                             if (getProgress() < 100) {
                                 setProgress(getProgress() + 1);
@@ -170,20 +168,24 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
                             } else {
                                 setProgress(0);
                                 scans++;
-                                currentItem.shrink(1); // Decrement item count by 1
-
+                                if(currentItem.isStackable()) {
+                                    currentItem.shrink(1);
+                                } else {
+                                    inventory.setStackInSlot(1, ItemStack.EMPTY);
+                                }
                                 if (scans >= getScansRequired(currentItem.getItem())) {
+                                    ItemStack encodedItem = new ItemStack(currentItem.getItem(), 1);
                                     // Notifying the neighboring encoder of this scanner having finished its operation
-                                    ((EncoderBlockEntity)level.getBlockEntity(encoderPos)).ignite(new ItemStack(currentItem.getItem(), 1)); // Transmit 1 item to the encoder
+                                    ((EncoderBlockEntity) level.getBlockEntity(encoderPos)).ignite(encodedItem);
                                     scans = 0;
-                                    storedItem = null;  // Reset the stored item after completing the scan
+                                    storedItem = null;
                                 }
                             }
                         }
                     } else {
-                        setProgress(0); // if item was changed, reset progress to 0
+                        setProgress(0);
                         scans = 0;
-                        storedItem = currentItem.getItem();  // Update the stored item if the item changes
+                        storedItem = currentItem.getItem();
                     }
                 }
             }
