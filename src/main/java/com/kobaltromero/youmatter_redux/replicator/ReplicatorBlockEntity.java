@@ -2,6 +2,7 @@ package com.kobaltromero.youmatter_redux.replicator;
 
 
 import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
+import com.kobaltromero.youmatter_redux.producer.ProducerBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -45,7 +46,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
     private boolean currentMode = true;  //true = loop; false = one time
 
-    private boolean isActive = false;
+    private boolean isActivated = false;
 
     boolean isCurrentMode() {
         return currentMode;
@@ -60,12 +61,12 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
-    boolean isActive() {
-        return isActive;
+    boolean isActivated() {
+        return isActivated;
     }
 
-    public void setActive(boolean active) {
-        isActive = active;
+    public void setActivated(boolean activated) {
+        isActivated = activated;
         setChanged();
 
         if (level != null && !level.isClientSide) {
@@ -183,6 +184,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
+        boolean isActive = false;
         if (currentPartTick == 5) {
             currentPartTick = 0;
             if (inventory != null) {
@@ -195,6 +197,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                                 getTank().fill(new FluidStack(ModContent.UMATTER.get(), 1000), IFluidHandler.FluidAction.EXECUTE);
                                 inventory.setStackInSlot(3, ItemStack.EMPTY);
                                 inventory.insertItem(4, new ItemStack(Items.BUCKET, 1), false);
+                                isActive = true;
                             }
                         }
                     } else if (GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(4), inventory.getStackInSlot(3), false)) {
@@ -205,6 +208,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                             } else {
                                 getTank().fill(h.drain(h.getFluidInTank(0).getAmount(), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
                             }
+                            isActive = true;
                         }
                     }
                     inventory.setStackInSlot(3, ItemStack.EMPTY);
@@ -228,35 +232,39 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                                 }
                             }
                             renderItem(cachedItems, currentIndex);
+                            isActive = true;
                         }
                     }
                 }
                 if (progress == 0) {
                     if (!inventory.getStackInSlot(2).isEmpty()) {
-                        if (isActive) {
+                        if (isActivated) {
                             currentItem = cachedItems.get(currentIndex);
                             if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get() && tank.getFluidAmount() >= GeneralUtils.getUMatterAmountForItem(currentItem.getItem())) {
                                 tank.drain(GeneralUtils.getUMatterAmountForItem(currentItem.getItem()), IFluidHandler.FluidAction.EXECUTE);
                                 progress++;
                                 myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
+                                isActive = true;
                             }
                         }
                     }
-                } else if (isActive) {
+                } else if (isActivated) {
                     if (progress >= 100) {
                         if (!inventory.getStackInSlot(2).isEmpty()) {
                             if (!currentMode) {
-                                isActive = false;
+                                isActivated = false;
                             }
                             inventory.insertItem(1, currentItem, false);
                         }
                         progress = 0;
+                        isActive = false;  // Ensure it gets set to false after the process completes
                     } else if (currentItem != null) {
-                        if(!currentItem.isEmpty()) {
+                        if (!currentItem.isEmpty()) {
                             if (ItemStack.isSameItem(currentItem, inventory.getStackInSlot(2)) && (inventory.getStackInSlot(1).isEmpty() || GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(1), currentItem, false))) {
                                 if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get()) {
                                     progress++;
                                     myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
+                                    isActive = true;
                                 }
                             }
                         }
@@ -265,28 +273,32 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                     }
                 } else if (cachedItems != null && currentIndex < cachedItems.size()) {
                     currentItem = cachedItems.get(currentIndex);
+                    isActive = true;
                 }
             }
         }
         currentPartTick++;
+        state.setValue(ReplicatorBlock.ACTIVE, isActive);
     }
 
     public void renderPrevious() {
         if(cachedItems != null){
             if (currentIndex > 0) {
                 currentIndex = currentIndex - 1;
+            } else {
+                currentIndex = cachedItems.size() - 1;
             }
         }
-
     }
 
     public void renderNext() {
         if(cachedItems != null){
             if (currentIndex < cachedItems.size() - 1) {
                 currentIndex = currentIndex + 1;
+            } else {
+                currentIndex = 0;
             }
         }
-
     }
 
     private void renderItem(List<ItemStack> cache, int index) {
@@ -324,7 +336,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         super.loadAdditional(compound, provider);
         tank.readFromNBT(provider, compound.getCompound("tank"));
         setEnergy(compound.getInt("energy"));
-        setActive(compound.getBoolean("isActive"));
+        setActivated(compound.getBoolean("isActivated"));
         setProgress(compound.getInt("progress"));
         setCurrentMode(compound.getBoolean("mode"));
         if (compound.contains("inventory")) {
@@ -339,7 +351,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         tank.writeToNBT(provider, tagTank);
         compound.put("tank", tagTank);
         compound.putInt("energy", getEnergy());
-        compound.putBoolean("isActive", isActive);
+        compound.putBoolean("isActivated", isActivated);
         compound.putBoolean("mode", isCurrentMode());
         compound.putInt("progress", getProgress());
         if (inventory != null) {

@@ -4,16 +4,14 @@ import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import com.kobaltromero.youmatter_redux.ModContent;
 import com.kobaltromero.youmatter_redux.YouMatter;
-import com.kobaltromero.youmatter_redux.items.ThumbDriveItem;
+import com.kobaltromero.youmatter_redux.items.tiered.thumbdrives.ThumbDriveItem;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

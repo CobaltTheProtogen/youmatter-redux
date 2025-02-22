@@ -13,7 +13,7 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.jetbrains.annotations.NotNull;
 import com.kobaltromero.youmatter_redux.ModContent;
-import com.kobaltromero.youmatter_redux.items.ThumbDriveItem;
+import com.kobaltromero.youmatter_redux.items.tiered.thumbdrives.ThumbDriveItem;
 
 public class EncoderMenu extends AbstractContainerMenu {
 

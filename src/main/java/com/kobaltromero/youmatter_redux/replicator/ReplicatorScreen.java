@@ -58,7 +58,7 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         drawEnergyBolt(guiGraphics, replicator.getEnergy());
-        drawActiveIcon(guiGraphics, replicator.isActive());
+        drawActiveIcon(guiGraphics, replicator.isActivated());
         drawModeIcon(guiGraphics, replicator.isCurrentMode());
         drawProgressArrow(guiGraphics, replicator.getProgress());
 
@@ -81,8 +81,8 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
         guiGraphics.blit(GUI, 91, 38, 176, 134, 11, Math.round((progress / 100.0f) * 19));
     }
 
-    private void drawActiveIcon(GuiGraphics guiGraphics, boolean isActive) {
-        if(isActive) {
+    private void drawActiveIcon(GuiGraphics guiGraphics, boolean isActivated) {
+        if(isActivated) {
             guiGraphics.blit(GUI, 154, 12, 176, 24, 8, 9);
         } else {
             guiGraphics.blit(GUI, 154, 12, 184, 24, 8, 9);
@@ -126,7 +126,7 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
         }
 
         if(xAxis >= 148 && xAxis <= 167 && yAxis >= 7 && yAxis <= 27) {
-            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(replicator.isActive() ? I18n.get("youmatter.gui.active") : I18n.get("youmatter.gui.paused")), Component.literal(I18n.get("youmatter.gui.clicktochange"))));
+            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(replicator.isActivated() ? I18n.get("youmatter.gui.active") : I18n.get("youmatter.gui.paused")), Component.literal(I18n.get("youmatter.gui.clicktochange"))));
         }
 
         if(xAxis >= 148 && xAxis <= 167 && yAxis >= 31 && yAxis <= 51) {
@@ -234,15 +234,15 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
             } else if(xAxis >= 148 && xAxis <= 167 && yAxis >= 7 && yAxis <= 27) {
                 //Playing Click sound
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-                replicator.setActive(!replicator.isActive());
+                replicator.setActivated(!replicator.isActivated());
                 //Sending packet to server
-                PacketDistributor.sendToServer(new PacketChangeSettingsReplicatorServer(replicator.isActive(), replicator.isCurrentMode()));
+                PacketDistributor.sendToServer(new PacketChangeSettingsReplicatorServer(replicator.isActivated(), replicator.isCurrentMode()));
             } else if(xAxis >= 148 && xAxis <= 167 && yAxis >= 31 && yAxis <= 51) {
                 //Playing Click sound
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 replicator.setCurrentMode(!replicator.isCurrentMode());
                 //Sending packet to server
-                PacketDistributor.sendToServer(new PacketChangeSettingsReplicatorServer(replicator.isActive(), replicator.isCurrentMode()));
+                PacketDistributor.sendToServer(new PacketChangeSettingsReplicatorServer(replicator.isActivated(), replicator.isCurrentMode()));
             }
         }
         return true;

@@ -1,5 +1,6 @@
 package com.kobaltromero.youmatter_redux.scanner;
 
+import com.kobaltromero.youmatter_redux.replicator.ReplicatorBlock;
 import com.kobaltromero.youmatter_redux.util.GeneralUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,7 +35,7 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 
     public boolean hasEncoder = false;
     private int scans = 0;
-    private Item storedItem = null;  // Add this line
+    private Item storedItem = null;
 
     public ScannerBlockEntity(BlockPos pos, BlockState state) {
         super(ModContent.SCANNER_BLOCK_ENTITY.get(), pos, state);
@@ -146,7 +147,7 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 
     public void tick(Level level, BlockPos pos, BlockState state) {
         BlockPos encoderPos = getNeighborEncoder(this.worldPosition);
-
+        boolean isActive = false;
         if (encoderPos != null) {
             if (!hasEncoder) {
                 setChanged();
@@ -165,10 +166,11 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
                             if (getProgress() < 100) {
                                 setProgress(getProgress() + 1);
                                 myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyScanner.get(), false);
+                                isActive = true;
                             } else {
                                 setProgress(0);
                                 scans++;
-                                if(currentItem.isStackable()) {
+                                if (currentItem.isStackable()) {
                                     currentItem.shrink(1);
                                 } else {
                                     inventory.setStackInSlot(1, ItemStack.EMPTY);
@@ -176,7 +178,7 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
                                 if (scans >= getScansRequired(currentItem.getItem())) {
                                     ItemStack encodedItem = new ItemStack(currentItem.getItem(), 1);
                                     // Notifying the neighboring encoder of this scanner having finished its operation
-                                    ((EncoderBlockEntity) level.getBlockEntity(encoderPos)).ignite(encodedItem);
+                                    ((EncoderBlockEntity) Objects.requireNonNull(level.getBlockEntity(encoderPos))).ignite(encodedItem);
                                     scans = 0;
                                     storedItem = null;
                                 }
@@ -185,10 +187,15 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
                     } else {
                         setProgress(0);
                         scans = 0;
+                        isActive = false;
                         storedItem = currentItem.getItem();
                     }
+                } else {
+                    setProgress(0);
+                    isActive = false;
                 }
             }
+            level.setBlock(pos, state.setValue(ScannerBlock.ACTIVE, isActive), 3);
         } else {
             if (hasEncoder) {
                 setChanged();

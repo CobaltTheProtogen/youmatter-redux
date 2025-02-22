@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -14,16 +13,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
 import com.kobaltromero.youmatter_redux.ModContent;
 import com.kobaltromero.youmatter_redux.YMConfig;
-import com.kobaltromero.youmatter_redux.items.ThumbDriveItem;
+import com.kobaltromero.youmatter_redux.items.tiered.thumbdrives.ThumbDriveItem;
 import com.kobaltromero.youmatter_redux.util.MyEnergyStorage;
 
 import javax.annotation.Nullable;
@@ -78,7 +75,7 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
     private final MyEnergyStorage myEnergyStorage = new MyEnergyStorage(this, 1000000, Integer.MAX_VALUE);
 
     @Override
-    public void loadAdditional(@NotNull CompoundTag compound, HolderLookup.Provider provider) {
+    public void loadAdditional(CompoundTag compound, HolderLookup.Provider provider) {
         super.loadAdditional(compound, provider);
         setProgress(compound.getInt("progress"));
         setEnergy(compound.getInt("energy"));
@@ -98,7 +95,7 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
 
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag compound, HolderLookup.@NotNull Provider provider) {
+    public void saveAdditional(CompoundTag compound, HolderLookup.Provider provider) {
         super.saveAdditional(compound, provider);
         compound.putInt("progress", getProgress());
         compound.putInt("energy", getEnergy());
@@ -115,7 +112,7 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     @Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider provider) {
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
         return saveWithoutMetadata(provider);
     }
 
@@ -135,69 +132,75 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
+        boolean isActive = false;
         if (!queue.isEmpty()) {
             ItemStack processIS = queue.get(queue.size() - 1);
-            if (processIS != ItemStack.EMPTY) {
-                if (inventory != null) {
-                    if (inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem thumb) {
-                        ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
-                        if (contents != null) {
-                            List<ItemStack> list = new ArrayList<>();
-                            for (ItemStack stack : contents.nonEmptyItems()) {
-                                list.add(stack);
-                            }
 
-                            // Check for duplicate item before adding
-                            boolean encoded = false;
-                            for (ItemStack encodedStack : list) {
-                                if (ItemStack.isSameItem(encodedStack, processIS)) {
-                                    encoded = true;
-                                    break; // Found a duplicate, exit loop
-                                }
-                            }
+            // Ensure processIS is not empty
+            if (!processIS.isEmpty()) {
+                if (inventory != null && inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem thumb) {
+                    ThumbDriveContents contents = inventory.getStackInSlot(1).get(ModContent.THUMBDRIVE_CONTAINER.get());
 
-                            if (!encoded) { // Only proceed if the item is not already encoded.
-                                if (list.size() < thumb.getMaxStorageInKb()) { // Use thumb.getMaxStorageInKb()
-                                    if (progress < 100) {
-                                        if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
-                                            progress++;
-                                            myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
-                                        }
-                                    } else {
-                                        list.add(processIS);
-                                        ThumbDriveContents newContents = ThumbDriveContents.fromItems(list);
-                                        inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER.get(), newContents);
-                                        queue.remove(processIS);
-                                        progress = 0;
-                                    }
-                                }
-                            } else {
-                                queue.remove(processIS); // Remove from the queue to prevent infinite loop.
-                                progress = 0;
-                            }
-                        } else { // Contents is null (empty thumb drive)
-                            if (progress < 100) {
-                                if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
-                                    progress++;
-                                    myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
-                                }
-                            } else {
-                                List<ItemStack> list = new ArrayList<>();
-                                list.add(processIS);
-                                ThumbDriveContents newContents = ThumbDriveContents.fromItems(list);
-                                inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER.get(), newContents);
-                                queue.remove(processIS);
-                                progress = 0;
-                            }
+                    List<ItemStack> list = new ArrayList<>();
+                    if (contents != null) {
+                        for (ItemStack stack : contents.nonEmptyItems()) {
+                            list.add(stack);
                         }
                     }
+
+                    boolean encoded = false;
+                    for (ItemStack encodedStack : list) {
+                        if (ItemStack.isSameItem(encodedStack, processIS)) {
+                            encoded = true;
+                            break;
+                        }
+                    }
+
+                    if (!encoded && list.size() < thumb.getMaxStorageInKb()) {
+                        if (progress < 100) {
+                            if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
+                                progress++;
+                                myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
+                                isActive = true; // Machine is active when it has enough power to encode
+                            } else {
+                                isActive = false; // Machine is inactive when it doesn't have enough power to encode
+                            }
+                        } else {
+                            list.add(processIS);
+                            inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER.get(), ThumbDriveContents.fromItems(list));
+                            queue.removeIf(item -> ItemStack.isSameItem(item, processIS));
+                            progress = 0;
+                            isActive = true; // Machine is active when encoding is complete
+                        }
+                    } else {
+                        queue.removeIf(item -> ItemStack.isSameItem(item, processIS));
+                        progress = 0;
+                        isActive = true; // Machine is active when processing the item
+                    }
+                } else {
+                    // Reset progress if the thumb drive is taken out
+                    progress = 0;
                 }
+            } else {
+                // Remove empty item stack from the queue to prevent it from being processed again
+                queue.remove(processIS);
+                isActive = false; // Machine is inactive when processing empty item stack
             }
         }
+
+        // Set isActive to false when queue is empty
+        if (queue.isEmpty()) {
+            isActive = false;
+        }
+
+        // Update block state based on isActive variable
+        level.setBlock(pos, state.setValue(EncoderBlock.ACTIVE, isActive), 3);
     }
 
+
+
     @Override
-    public @NotNull Component getDisplayName() {
+    public Component getDisplayName() {
         return Component.translatable(ModContent.ENCODER_BLOCK.get().getDescriptionId());
     }
 

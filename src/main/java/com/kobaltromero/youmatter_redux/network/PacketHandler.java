@@ -57,7 +57,7 @@ public class PacketHandler {
         public static void handle(final PacketChangeSettingsReplicatorServer data, final IPayloadContext ctx) {
             ctx.enqueueWork(() -> {
                 if (ctx.player().containerMenu instanceof ReplicatorMenu openContainer) {
-                    openContainer.replicator.setActive(data.isActivated());
+                    openContainer.replicator.setActivated(data.isActivated());
                     openContainer.replicator.setCurrentMode(data.mode());
                 }
             });

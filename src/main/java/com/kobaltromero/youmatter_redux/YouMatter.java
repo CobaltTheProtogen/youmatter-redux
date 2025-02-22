@@ -37,12 +37,15 @@ public class YouMatter {
                         new ItemStack(ModContent.ENCODER_BLOCK.get()),
                         new ItemStack(ModContent.PRODUCER_BLOCK.get()),
                         new ItemStack(ModContent.REPLICATOR_BLOCK.get()),
-                        new ItemStack(ModContent.MACHINE_CASING_ITEM.get()),
+                        new ItemStack(ModContent.IRON_PLATE_ITEM.get()),
                         new ItemStack(ModContent.BLACK_HOLE_ITEM.get()),
                         new ItemStack(ModContent.COMPUTE_MODULE_ITEM.get()),
                         new ItemStack(ModContent.TRANSISTOR_RAW_ITEM.get()),
                         new ItemStack(ModContent.TRANSISTOR_ITEM.get()),
+                        new ItemStack(ModContent.THUMBDRIVE_4_ITEM.get()),
                         new ItemStack(ModContent.THUMBDRIVE_8_ITEM.get()),
+                        new ItemStack(ModContent.THUMBDRIVE_16_ITEM.get()),
+                        new ItemStack(ModContent.THUMBDRIVE_32_ITEM.get()),
                         new ItemStack(ModContent.UMATTER_BUCKET.get()),
                         new ItemStack(ModContent.STABILIZER_BUCKET.get())));
             }).build());

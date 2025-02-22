@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -230,27 +231,30 @@ public class ProducerBlockEntity extends BlockEntity implements MenuProvider {
 
     public void tick(Level level, BlockPos pos, BlockState state) {
         if (currentPartTick == 40) { // 2 sec
-            if(isActivated()) {
+            boolean isActive = false;
+            if (isActivated()) {
                 if (getEnergy() >= 0.3f * 1000000 && sTank.getFluidAmount() >= 125) { // if energy more than 30 % of max energy
                     if (uTank.getFluidAmount() + YMConfig.CONFIG.productionPerTick.get() <= MAX_UMATTER) {
                         sTank.drain(125, IFluidHandler.FluidAction.EXECUTE);
                         uTank.fill(new FluidStack(ModContent.UMATTER.get(), YMConfig.CONFIG.productionPerTick.get()), IFluidHandler.FluidAction.EXECUTE);
-                        myEnergyStorage.extractEnergy(Math.round(getEnergy()/3f), false);
+                        myEnergyStorage.extractEnergy(Math.round(getEnergy() / 3f), false);
+                        isActive = true;
                     }
                 }
             }
+            level.setBlock(pos, state.setValue(ProducerBlock.ACTIVE, isActive), 3);
             //Auto-outputting U-Matter
             Object[] neighborTE = getNeighborTileEntity(pos);
-            if(neighborTE != null){
+            if (neighborTE != null) {
                 IFluidHandler h = level.getCapability(Capabilities.FluidHandler.BLOCK, ((BlockPos) neighborTE[0]), (Direction) neighborTE[1]);
-                if(h != null) {
-                    int amountToDrain = Math.min(uTank.getFluidAmount(), 500); // set a maximum output of 500 mB (every two seconds)
+                if (h != null) {
+                    int amountToDrain = Math.min(uTank.getFluidAmount(), 1000); // set a maximum output of 1000 mB (every two seconds)
                     uTank.drain(h.fill(new FluidStack(ModContent.UMATTER.get(), amountToDrain), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
                 }
             }
             currentPartTick = 0;
         } else if ((currentPartTick % 5) == 0) { // every five ticks
-            if(inventory != null) {
+            if (inventory != null) {
                 if (!(inventory.getStackInSlot(3).isEmpty()) && GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(4), inventory.getStackInSlot(3), false)) {
                     ItemStack item = inventory.getStackInSlot(3);
                     if (item.getItem() instanceof BucketItem) {
@@ -261,7 +265,7 @@ public class ProducerBlockEntity extends BlockEntity implements MenuProvider {
                         }
                     } else {
                         IFluidHandlerItem h = item.getCapability(Capabilities.FluidHandler.ITEM);
-                        if(h != null) {
+                        if (h != null) {
                             if (h.getFluidInTank(0).getFluid().isSame(ModContent.UMATTER.get()) || h.getFluidInTank(0).isEmpty()) {
                                 if (h.getTankCapacity(0) - h.getFluidInTank(0).getAmount() < getUTank().getFluidAmount()) { //fluid in S-Tank is more than what fits in the item's tank
                                     getUTank().drain(h.fill(new FluidStack(ModContent.UMATTER.get(), h.getTankCapacity(0) - h.getFluidInTank(0).getAmount()), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
@@ -278,7 +282,7 @@ public class ProducerBlockEntity extends BlockEntity implements MenuProvider {
                     ItemStack item = inventory.getStackInSlot(1);
                     if (item.getItem() instanceof BucketItem && GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(2), new ItemStack(Items.BUCKET, 1), false)) {
                         IFluidHandlerItem h = item.getCapability(Capabilities.FluidHandler.ITEM);
-                        if(h != null) {
+                        if (h != null) {
                             if (!h.getFluidInTank(0).isEmpty() && (h.getFluidInTank(0).getFluid().isSame(ModContent.STABILIZER.get()) || YMConfig.CONFIG.alternativeStabilizer.get().equalsIgnoreCase(RegistryUtil.getRegistryName(h.getFluidInTank(0).getFluid()).getPath()))) {
                                 if (MAX_STABILIZER - getSTank().getFluidAmount() >= 1000) {
                                     getSTank().fill(new FluidStack(ModContent.STABILIZER.get(), 1000), IFluidHandler.FluidAction.EXECUTE);
@@ -287,9 +291,9 @@ public class ProducerBlockEntity extends BlockEntity implements MenuProvider {
                                 }
                             }
                         }
-                    } else if(GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(2), inventory.getStackInSlot(1), false)) {
+                    } else if (GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(2), inventory.getStackInSlot(1), false)) {
                         IFluidHandlerItem h = item.getCapability(Capabilities.FluidHandler.ITEM);
-                        if(h != null) {
+                        if (h != null) {
                             if (h.getFluidInTank(0).getFluid().isSame(ModContent.STABILIZER.get()) || YMConfig.CONFIG.alternativeStabilizer.get().equalsIgnoreCase(RegistryUtil.getRegistryName(h.getFluidInTank(0).getFluid()).getPath())) {
                                 if (h.getFluidInTank(0).getAmount() > MAX_STABILIZER - getSTank().getFluidAmount()) { //given fluid is more than what fits in the S-Tank
                                     getSTank().fill(h.drain(MAX_STABILIZER - getSTank().getFluidAmount(), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
@@ -308,6 +312,7 @@ public class ProducerBlockEntity extends BlockEntity implements MenuProvider {
             currentPartTick++;
         }
     }
+
 
     private Object[] getNeighborTileEntity(BlockPos ProducerPos) {
         Object[] result = null;

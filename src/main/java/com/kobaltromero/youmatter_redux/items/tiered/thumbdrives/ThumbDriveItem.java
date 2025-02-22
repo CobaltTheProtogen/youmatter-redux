@@ -1,52 +1,30 @@
-package com.kobaltromero.youmatter_redux.items;
+package com.kobaltromero.youmatter_redux.items.tiered.thumbdrives;
 
 import com.kobaltromero.youmatter_redux.ModContent;
 import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
+import com.kobaltromero.youmatter_redux.items.tiered.TieredItem;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class ThumbDriveItem extends Item {
+public class ThumbDriveItem extends TieredItem {
+
+    public ThumbDriveItem(Properties properties, Tier tier) {
+        super(properties, tier);
+    }
 
     public ThumbDriveContents getThumbDriveContents(ItemStack stack) {
         return stack.get(ModContent.THUMBDRIVE_CONTAINER.get());
     }
 
-    public ThumbDriveItem() {
-        super(new Properties().stacksTo(1).component(ModContent.THUMBDRIVE_CONTAINER, ThumbDriveContents.EMPTY));
-    }
-
     public int getMaxStorageInKb() {
         return 1; // Minimum of 1 item can be stored. For obvious reasons.
     }
-
-    @Override
-    public boolean isBarVisible(@NotNull ItemStack stack) {
-       return true;
-    }
-
-
-    @Override
-    public int getBarWidth(@NotNull ItemStack stack) {
-        ThumbDriveContents contents = getThumbDriveContents(stack);
-        if(contents != null) {
-            float filledRatio = (float)contents.getSlots() / (float)this.getMaxStorageInKb();
-            return Math.round(filledRatio * 13.0F);
-        }
-        return 0;
-    }
-
-    @Override
-    public int getBarColor(@NotNull ItemStack stack) {
-         return 0xFFFF00;
-    }
-
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         ThumbDriveContents contents = getThumbDriveContents(stack);
@@ -54,12 +32,12 @@ public class ThumbDriveItem extends Item {
             int maxStorage = getMaxStorageInKb();
             int freeStorage = maxStorage - contents.getSlots();
             int color = getChatColor(freeStorage, maxStorage);
-            if (Screen.hasAltDown()) {
-                tooltip.add(Component.literal(I18n.get("youmatter.tooltip.remainingSpace", freeStorage, maxStorage)).withColor(color));
-            }
+            tooltip.add(Component.literal(I18n.get("youmatter.tooltip.remainingSpace", freeStorage, maxStorage)).withColor(color));
+        }
+        if(Screen.hasAltDown()) {
+            tooltip.add(Component.literal(I18n.get("youmatter.tooltip.thumbdrive")));
         }
     }
-
     private static int getChatColor(int freeStorage, int maxStorage) {
         int percentageFree = (freeStorage * 100) / maxStorage;
         return switch (percentageFree / 25) {

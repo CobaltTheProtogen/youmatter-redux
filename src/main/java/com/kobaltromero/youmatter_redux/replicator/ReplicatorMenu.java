@@ -14,7 +14,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import com.kobaltromero.youmatter_redux.ModContent;
-import com.kobaltromero.youmatter_redux.items.ThumbDriveItem;
+import com.kobaltromero.youmatter_redux.items.tiered.thumbdrives.ThumbDriveItem;
 import com.kobaltromero.youmatter_redux.util.DisplaySlot;
 
 public class ReplicatorMenu extends AbstractContainerMenu {
