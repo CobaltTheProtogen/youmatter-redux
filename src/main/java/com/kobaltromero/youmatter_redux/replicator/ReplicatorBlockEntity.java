@@ -6,8 +6,12 @@ import com.kobaltromero.youmatter_redux.producer.ProducerBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -36,6 +40,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -184,101 +189,105 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
-        boolean isActive = false;
         if (currentPartTick == 5) {
             currentPartTick = 0;
-            if (inventory != null) {
+            if (inventory != null)
                 if (!inventory.getStackInSlot(3).isEmpty()) {
                     ItemStack item = inventory.getStackInSlot(3);
                     if (item.getItem() instanceof BucketItem && GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(4), new ItemStack(Items.BUCKET, 1), false)) {
                         IFluidHandlerItem h = item.getCapability(Capabilities.FluidHandler.ITEM);
-                        if (h != null && !h.getFluidInTank(0).isEmpty() && h.getFluidInTank(0).getFluid().isSame(ModContent.UMATTER.get())) {
+                        if (!h.getFluidInTank(0).isEmpty() && h.getFluidInTank(0).getFluid().isSame(ModContent.UMATTER.get())) {
                             if (MAX_UMATTER - getTank().getFluidAmount() >= 1000) {
                                 getTank().fill(new FluidStack(ModContent.UMATTER.get(), 1000), IFluidHandler.FluidAction.EXECUTE);
                                 inventory.setStackInSlot(3, ItemStack.EMPTY);
                                 inventory.insertItem(4, new ItemStack(Items.BUCKET, 1), false);
-                                isActive = true;
                             }
                         }
                     } else if (GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(4), inventory.getStackInSlot(3), false)) {
                         IFluidHandlerItem h = item.getCapability(Capabilities.FluidHandler.ITEM);
-                        if (h != null && h.getFluidInTank(0).getFluid().isSame(ModContent.UMATTER.get())) {
-                            if (h.getFluidInTank(0).getAmount() > MAX_UMATTER - getTank().getFluidAmount()) {
+                        if (h.getFluidInTank(0).getFluid().isSame(ModContent.UMATTER.get())) {
+                            if (h.getFluidInTank(0).getAmount() > MAX_UMATTER - getTank().getFluidAmount()) { //given fluid is more than what fits in the U-Tank
                                 getTank().fill(h.drain(MAX_UMATTER - getTank().getFluidAmount(), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
-                            } else {
+                            } else { //given fluid fits perfectly in U-Tank
                                 getTank().fill(h.drain(h.getFluidInTank(0).getAmount(), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
                             }
-                            isActive = true;
                         }
+                        inventory.setStackInSlot(3, ItemStack.EMPTY);
+                        inventory.insertItem(4, item, false);
                     }
-                    inventory.setStackInSlot(3, ItemStack.EMPTY);
-                    inventory.insertItem(4, item, false);
                 }
 
-                ItemStack thumbdrive = inventory.getStackInSlot(0);
-                if (thumbdrive.isEmpty()) {
-                    inventory.setStackInSlot(2, ItemStack.EMPTY);
-                    cachedItems = null;
-                    currentIndex = 0;
-                    progress = 0;
-                } else {
-                    if (thumbdrive.has(ModContent.THUMBDRIVE_CONTAINER.get())) {
-                        ThumbDriveContents contents = thumbdrive.get(ModContent.THUMBDRIVE_CONTAINER.get());
+            ItemStack thumbdrive = inventory.getStackInSlot(0);
+            if (thumbdrive.isEmpty()) { //in case user removes thumb drive while replicator is in operation
+                inventory.setStackInSlot(2, ItemStack.EMPTY);
+                cachedItems = null;
+                currentIndex = 0;
+                progress = 0;
+            } else {
+                if (thumbdrive.has(ModContent.THUMBDRIVE_CONTAINER.get())) {
+                    ThumbDriveContents contents = thumbdrive.get(ModContent.THUMBDRIVE_CONTAINER.get());
+                    if (contents != null) {
                         cachedItems = new ArrayList<>();
-                        if (contents != null) {
-                            for (ItemStack stack : contents.nonEmptyItems()) {
-                                if (stack != null) {
-                                    cachedItems.add(stack.copy());
+                        for (ItemStack newItem : contents.nonEmptyItems()) {
+                            if (newItem != null) {
+                                cachedItems.add(newItem.copy());
+                            }
+                        }
+                        renderItem(cachedItems, currentIndex);
+                        if (progress == 0) {
+                            if (!inventory.getStackInSlot(2).isEmpty()) {
+                                if (isActivated) {
+                                    currentItem = cachedItems.get(currentIndex);
+                                    if(myEnergyStorage != null) {
+                                        if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get()) {
+                                            if (tank.getFluidAmount() >= GeneralUtils.getUMatterAmountForItem(currentItem.getItem())) {
+                                                tank.drain(GeneralUtils.getUMatterAmountForItem(currentItem.getItem()), IFluidHandler.FluidAction.EXECUTE);
+                                                progress++;
+                                                myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
+                                            }
+                                        }
+                                    }
                                 }
                             }
-                            renderItem(cachedItems, currentIndex);
-                            isActive = true;
-                        }
-                    }
-                }
-                if (progress == 0) {
-                    if (!inventory.getStackInSlot(2).isEmpty()) {
-                        if (isActivated) {
-                            currentItem = cachedItems.get(currentIndex);
-                            if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get() && tank.getFluidAmount() >= GeneralUtils.getUMatterAmountForItem(currentItem.getItem())) {
-                                tank.drain(GeneralUtils.getUMatterAmountForItem(currentItem.getItem()), IFluidHandler.FluidAction.EXECUTE);
-                                progress++;
-                                myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
-                                isActive = true;
-                            }
-                        }
-                    }
-                } else if (isActivated) {
-                    if (progress >= 100) {
-                        if (!inventory.getStackInSlot(2).isEmpty()) {
-                            if (!currentMode) {
-                                isActivated = false;
-                            }
-                            inventory.insertItem(1, currentItem, false);
-                        }
-                        progress = 0;
-                        isActive = false;  // Ensure it gets set to false after the process completes
-                    } else if (currentItem != null) {
-                        if (!currentItem.isEmpty()) {
-                            if (ItemStack.isSameItem(currentItem, inventory.getStackInSlot(2)) && (inventory.getStackInSlot(1).isEmpty() || GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(1), currentItem, false))) {
-                                if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get()) {
-                                    progress++;
-                                    myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
-                                    isActive = true;
+                        } else {
+                            if (isActivated) {
+                                if (progress >= 100) {
+                                    if (!inventory.getStackInSlot(2).isEmpty()) {
+                                        if (!currentMode) { //if mode is single run, then pause machine
+                                            isActivated = false;
+                                        }
+                                        inventory.insertItem(1, currentItem, false);
+                                    }
+                                    progress = 0;
+                                } else {
+                                    if (currentItem != null) {
+                                        if (!currentItem.isEmpty()) {
+                                            if (ItemStack.isSameItem(currentItem, inventory.getStackInSlot(2))) { // Check if selected item hasn't changed
+                                                if (inventory.getStackInSlot(1).isEmpty() || GeneralUtils.canAddItemToSlot(inventory.getStackInSlot(1), currentItem, false)) { //check if output slot is still empty
+                                                    if(myEnergyStorage != null) {
+                                                        if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get()) {
+                                                            progress++;
+                                                            myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                progress = 0; // abort if not
+                                            }
+                                        }
+                                    } else {
+                                        if (cachedItems.get(currentIndex) != null) { //in case the current item isn't loaded yet -> this happens when reloading the world, see issue #31 on GitHub
+                                            currentItem = cachedItems.get(currentIndex);
+                                        }
+                                    }
                                 }
                             }
                         }
-                    } else {
-                        progress = 0;
                     }
-                } else if (cachedItems != null && currentIndex < cachedItems.size()) {
-                    currentItem = cachedItems.get(currentIndex);
-                    isActive = true;
                 }
             }
         }
         currentPartTick++;
-        state.setValue(ReplicatorBlock.ACTIVE, isActive);
     }
 
     public void renderPrevious() {
