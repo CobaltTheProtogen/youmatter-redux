@@ -71,6 +71,7 @@ public class YouMatter {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModContent.PRODUCER_BLOCK_ENTITY.get(), (o, direction) -> o.getItemHandler());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModContent.PRODUCER_BLOCK_ENTITY.get(), (o, direction) -> o.getEnergyHandler());
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModContent.PRODUCER_BLOCK_ENTITY.get(), (o, direction) -> o.getFluidHandler());
+        // event.registerItem(Capabilities.FluidHandler.ITEM, ModContent.FLUID_CELL.get());
     }
 
     @SubscribeEvent

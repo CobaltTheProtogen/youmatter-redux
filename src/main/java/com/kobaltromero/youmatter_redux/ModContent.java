@@ -2,17 +2,11 @@ package com.kobaltromero.youmatter_redux;
 
 
 import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
-import com.kobaltromero.youmatter_redux.items.parts.ComputeModuleItem;
-import com.kobaltromero.youmatter_redux.items.parts.IronPlateItem;
-import com.kobaltromero.youmatter_redux.items.parts.TransistorItem;
-import com.kobaltromero.youmatter_redux.items.parts.TransistorRawItem;
+import com.kobaltromero.youmatter_redux.items.parts.*;
 import com.kobaltromero.youmatter_redux.items.tiered.BlackHoleItem;
 import com.kobaltromero.youmatter_redux.items.tiered.TieredBlockItem;
 import com.kobaltromero.youmatter_redux.items.tiered.TieredItem;
-import com.kobaltromero.youmatter_redux.items.tiered.machines.EncoderBlockItem;
-import com.kobaltromero.youmatter_redux.items.tiered.machines.ProducerBlockItem;
-import com.kobaltromero.youmatter_redux.items.tiered.machines.ReplicatorBlockItem;
-import com.kobaltromero.youmatter_redux.items.tiered.machines.ScannerBlockItem;
+import com.kobaltromero.youmatter_redux.items.tiered.machines.*;
 import com.kobaltromero.youmatter_redux.items.tiered.thumbdrives.ThumbDrive16Item;
 import com.kobaltromero.youmatter_redux.items.tiered.thumbdrives.ThumbDrive32Item;
 import com.kobaltromero.youmatter_redux.items.tiered.thumbdrives.ThumbDrive4Item;
@@ -25,6 +19,7 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.FlowingFluid;
@@ -33,30 +28,27 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import com.kobaltromero.youmatter_redux.producer.ProducerBlock;
-import com.kobaltromero.youmatter_redux.producer.ProducerBlockEntity;
-import com.kobaltromero.youmatter_redux.producer.ProducerMenu;
-import com.kobaltromero.youmatter_redux.encoder.EncoderBlock;
-import com.kobaltromero.youmatter_redux.encoder.EncoderBlockEntity;
-import com.kobaltromero.youmatter_redux.encoder.EncoderMenu;
-import com.kobaltromero.youmatter_redux.fluid.StabilizerFluidBlock;
+import net.neoforged.neoforge.registries.*;
+import com.kobaltromero.youmatter_redux.blocks.producer.ProducerBlock;
+import com.kobaltromero.youmatter_redux.blocks.producer.ProducerBlockEntity;
+import com.kobaltromero.youmatter_redux.blocks.producer.ProducerMenu;
+import com.kobaltromero.youmatter_redux.blocks.encoder.EncoderBlock;
+import com.kobaltromero.youmatter_redux.blocks.encoder.EncoderBlockEntity;
+import com.kobaltromero.youmatter_redux.blocks.encoder.EncoderMenu;
+import com.kobaltromero.youmatter_redux.blocks.StabilizerFluidBlock;
 import com.kobaltromero.youmatter_redux.fluid.StabilizerFluidType;
-import com.kobaltromero.youmatter_redux.fluid.UMatterFluidBlock;
+import com.kobaltromero.youmatter_redux.blocks.UMatterFluidBlock;
 import com.kobaltromero.youmatter_redux.fluid.UMatterFluidType;
-import com.kobaltromero.youmatter_redux.replicator.ReplicatorBlock;
-import com.kobaltromero.youmatter_redux.replicator.ReplicatorBlockEntity;
-import com.kobaltromero.youmatter_redux.replicator.ReplicatorMenu;
-import com.kobaltromero.youmatter_redux.scanner.ScannerBlock;
-import com.kobaltromero.youmatter_redux.scanner.ScannerBlockEntity;
-import com.kobaltromero.youmatter_redux.scanner.ScannerMenu;
+import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorBlock;
+import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorBlockEntity;
+import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorMenu;
+import com.kobaltromero.youmatter_redux.blocks.scanner.ScannerBlock;
+import com.kobaltromero.youmatter_redux.blocks.scanner.ScannerBlockEntity;
+import com.kobaltromero.youmatter_redux.blocks.scanner.ScannerMenu;
 
 public class ModContent {
 
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(BuiltInRegistries.BLOCK, YouMatter.MODID);
+    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(YouMatter.MODID);
     public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(BuiltInRegistries.MENU, YouMatter.MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, YouMatter.MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(YouMatter.MODID);
@@ -64,22 +56,22 @@ public class ModContent {
     public static final DeferredRegister<FluidType> FLUID_TYPES = DeferredRegister.create(NeoForgeRegistries.FLUID_TYPES, YouMatter.MODID);
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, YouMatter.MODID);
 
-    public static final DeferredHolder<Block, ScannerBlock> SCANNER_BLOCK = BLOCKS.register("scanner", ScannerBlock::new);
+    public static final DeferredBlock<ScannerBlock> SCANNER_BLOCK = BLOCKS.registerBlock("scanner", props -> new ScannerBlock(props.strength(5.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().lightLevel(state -> state.getValue(ModBlockStateProperties.ACTIVE) ? 7 : 0)));
     public static final DeferredHolder<MenuType<?>, MenuType<ScannerMenu>> SCANNER_MENU = MENU_TYPES.register("scanner", () -> IMenuTypeExtension.create((windowId, inv, data) -> new ScannerMenu(windowId, inv.player.level(), data.readBlockPos(), inv, inv.player)));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ScannerBlockEntity>> SCANNER_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("scanner", () -> BlockEntityType.Builder.of(ScannerBlockEntity::new, SCANNER_BLOCK.get()).build(null));
     public static final DeferredItem<ScannerBlockItem> SCANNER_BLOCK_ITEM = ITEMS.registerItem("scanner", props -> new ScannerBlockItem(SCANNER_BLOCK.get(), props, TieredBlockItem.Tier.BASIC));
 
-    public static final DeferredHolder<Block, EncoderBlock> ENCODER_BLOCK = BLOCKS.register("encoder", EncoderBlock::new);
+    public static final DeferredBlock<EncoderBlock> ENCODER_BLOCK = BLOCKS.registerBlock("encoder", props -> new EncoderBlock(props.strength(5.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().lightLevel(state -> state.getValue(ModBlockStateProperties.ACTIVE) ? 7 : 0)));
     public static final DeferredHolder<MenuType<?>, MenuType<EncoderMenu>> ENCODER_MENU = MENU_TYPES.register("encoder", () -> IMenuTypeExtension.create((windowId, inv, data) -> new EncoderMenu(windowId, inv.player.level(), data.readBlockPos(), inv, inv.player)));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<EncoderBlockEntity>> ENCODER_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("encoder", () -> BlockEntityType.Builder.of(EncoderBlockEntity::new, ENCODER_BLOCK.get()).build(null));
     public static final DeferredItem<EncoderBlockItem> ENCODER_BLOCK_ITEM = ITEMS.registerItem("encoder", props -> new EncoderBlockItem(ENCODER_BLOCK.get(), props, TieredBlockItem.Tier.BASIC));
 
-    public static final DeferredHolder<Block, ProducerBlock> PRODUCER_BLOCK = BLOCKS.register("producer", ProducerBlock::new);
+    public static final DeferredBlock<ProducerBlock> PRODUCER_BLOCK = BLOCKS.registerBlock("producer", props -> new ProducerBlock(props.strength(5.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().lightLevel(state -> state.getValue(ModBlockStateProperties.ACTIVE) ? 7 : 0)));
     public static final DeferredHolder<MenuType<?>, MenuType<ProducerMenu>> PRODUCER_MENU = MENU_TYPES.register("producer", () -> IMenuTypeExtension.create((windowId, inv, data) -> new ProducerMenu(windowId, inv.player.level(), data.readBlockPos(), inv, inv.player)));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ProducerBlockEntity>> PRODUCER_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("creator", () -> BlockEntityType.Builder.of(ProducerBlockEntity::new, PRODUCER_BLOCK.get()).build(null));
     public static final DeferredItem<ProducerBlockItem> PRODUCER_BLOCK_ITEM = ITEMS.registerItem("producer", props -> new ProducerBlockItem(PRODUCER_BLOCK.get(), props, TieredBlockItem.Tier.ULTIMATE));
 
-    public static final DeferredHolder<Block, ReplicatorBlock> REPLICATOR_BLOCK = BLOCKS.register("replicator", ReplicatorBlock::new);
+    public static final DeferredBlock<ReplicatorBlock> REPLICATOR_BLOCK = BLOCKS.registerBlock("replicator", props -> new ReplicatorBlock(props.strength(5.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().lightLevel(state -> state.getValue(ModBlockStateProperties.ACTIVE) ? 7 : 0)));
     public static final DeferredHolder<MenuType<?>, MenuType<ReplicatorMenu>> REPLICATOR_MENU = MENU_TYPES.register("replicator", () -> IMenuTypeExtension.create((windowId, inv, data) -> new ReplicatorMenu(windowId, inv.player.level(), data.readBlockPos(), inv, inv.player)));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ReplicatorBlockEntity>> REPLICATOR_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("replicator", () -> BlockEntityType.Builder.of(ReplicatorBlockEntity::new, REPLICATOR_BLOCK.get()).build(null));
     public static final DeferredItem<ReplicatorBlockItem> REPLICATOR_BLOCK_ITEM = ITEMS.registerItem("replicator", props -> new ReplicatorBlockItem(REPLICATOR_BLOCK.get(), props, TieredBlockItem.Tier.ELITE));
@@ -95,7 +87,7 @@ public class ModContent {
     public static final DeferredHolder<Fluid, FlowingFluid> UMATTER = FLUIDS.register("umatter", () -> new BaseFlowingFluid.Source(ModContent.UMATTER_PROPERTIES));
     public static final DeferredHolder<Fluid, FlowingFluid> UMATTER_FLOWING = FLUIDS.register("umatter_flowing", () -> new BaseFlowingFluid.Flowing(ModContent.UMATTER_PROPERTIES));
     public static final DeferredHolder<Block, UMatterFluidBlock> UMATTER_FLUID_BLOCK = BLOCKS.register("umatter_fluid_block", () -> new UMatterFluidBlock(UMATTER.get(), BlockBehaviour.Properties.of().noCollission().strength(1.0F).noLootTable()));
-    public static final DeferredHolder<Item, BucketItem> UMATTER_BUCKET = ITEMS.register("umatter_bucket", () -> new BucketItem(UMATTER.get(), new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
+    public static final DeferredHolder<Item, BucketItem> UMATTER_BUCKET = ITEMS.register("umatter_bucket", () -> new BucketItem(UMATTER.get(), new Item.Properties().stacksTo(1)));
     public static final BaseFlowingFluid.Properties UMATTER_PROPERTIES = new BaseFlowingFluid.Properties(UMATTER_TYPE, UMATTER, UMATTER_FLOWING).bucket(UMATTER_BUCKET).block(UMATTER_FLUID_BLOCK);
 
     public static final DeferredItem<ThumbDrive4Item> THUMBDRIVE_4_ITEM = ITEMS.registerItem("thumb_drive_4", props -> new ThumbDrive4Item(props.stacksTo(1).component(ModContent.THUMBDRIVE_CONTAINER, ThumbDriveContents.EMPTY), TieredItem.Tier.BASIC));

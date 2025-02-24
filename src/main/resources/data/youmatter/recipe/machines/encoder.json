@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "cMc",
+    "MTM",
+    "MMM"
+  ],
+  "key": {
+    "c": {
+      "tag": "c:circuits/basic"
+    },
+    "M": {
+      "tag": "c:plates/iron"
+    },
+    "T": {
+      "item": "youmatter:transistor"
+    }
+  },
+  "result": {
+    "id": "youmatter:encoder"
+  }
+}

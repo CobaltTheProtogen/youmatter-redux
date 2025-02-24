@@ -1,7 +1,34 @@
 {
   "variants": {
-    "": {
+    "facing=east,active=false": {
+      "model": "youmatter:block/encoder",
+      "y": 90
+    },
+    "facing=north,active=false": {
       "model": "youmatter:block/encoder"
+    },
+    "facing=south,active=false": {
+      "model": "youmatter:block/encoder",
+      "y": 180
+    },
+    "facing=west,active=false": {
+      "model": "youmatter:block/encoder",
+      "y": 270
+    },
+    "facing=east,active=true": {
+      "model": "youmatter:block/encoder",
+      "y": 90
+    },
+    "facing=north,active=true": {
+      "model": "youmatter:block/encoder"
+    },
+    "facing=south,active=true": {
+      "model": "youmatter:block/encoder",
+      "y": 180
+    },
+    "facing=west,active=true": {
+      "model": "youmatter:block/encoder",
+      "y": 270
     }
   }
 }

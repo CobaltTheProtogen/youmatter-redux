@@ -2,11 +2,11 @@
   "parent": "block/cube",
   "textures": {
     "particle": "youmatter:block/replicator_top",
-    "north": "youmatter:block/replicator_side",
-    "south": "youmatter:block/replicator_side",
-    "west": "youmatter:block/replicator_side",
-    "east": "youmatter:block/replicator_side",
+    "north": "youmatter:block/replicator_front",
+    "south": "youmatter:block/elite_side",
+    "west": "youmatter:block/elite_side",
+    "east": "youmatter:block/elite_side",
     "up": "youmatter:block/replicator_top",
-    "down": "youmatter:block/generic_side"
+    "down": "youmatter:block/elite_side"
   }
 }

@@ -6,10 +6,10 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.NotNull;
-import com.kobaltromero.youmatter_redux.producer.ProducerScreen;
-import com.kobaltromero.youmatter_redux.encoder.EncoderScreen;
-import com.kobaltromero.youmatter_redux.replicator.ReplicatorScreen;
-import com.kobaltromero.youmatter_redux.scanner.ScannerScreen;
+import com.kobaltromero.youmatter_redux.blocks.producer.ProducerScreen;
+import com.kobaltromero.youmatter_redux.blocks.encoder.EncoderScreen;
+import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorScreen;
+import com.kobaltromero.youmatter_redux.blocks.scanner.ScannerScreen;
 
 public class YMClient {
     public static void registerScreens(RegisterMenuScreensEvent event) {

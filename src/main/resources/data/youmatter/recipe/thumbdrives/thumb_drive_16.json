@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " cc",
+    "Itt",
+    " cc"
+  ],
+  "key": {
+    "c": {
+      "tag": "c:plates/iron"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "t": {
+      "item": "youmatter:thumb_drive_8"
+    }
+  },
+  "result": {
+    "id": "youmatter:thumb_drive_16"
+  }
+}

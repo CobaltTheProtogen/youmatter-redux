@@ -3,7 +3,7 @@
   "values": [
     "youmatter:scanner",
     "youmatter:encoder",
-    "youmatter:creator",
+    "youmatter:producer",
     "youmatter:replicator"
   ]
 }

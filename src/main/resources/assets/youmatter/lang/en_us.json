@@ -10,7 +10,7 @@
   "item.youmatter.thumb_drive_8": "Thumb Drive",
   "item.youmatter.thumb_drive_16": "Thumb Drive",
   "item.youmatter.thumb_drive_32": "Thumb Drive",
-  "item.youmatter.black_hole": "Miniature Black Hole",
+  "item.youmatter.black_hole": "Portable Black Hole",
   "item.youmatter.compute_module": "Compute Module",
   "item.youmatter.iron_plate": "Iron Plate",
   "item.youmatter.transistor": "Transistor",
@@ -61,7 +61,7 @@
   "youmatter.gui.clicktochange": "Click to change",
   "youmatter.gui.performInfiniteRuns": "§6Perform infinite runs",
   "youmatter.gui.performSingleRun": "§6Perform single run",
+  "youmatter.gui.scans.description": "Scans: %s of %s",
   "gui.youmatter.requiredAmount": "§aRequired Amount: %s mB",
-  "itemGroup.YouMatter": "YouMatter Redux",
-  "youmatter.gui.scans.description": "Scans: %s of %s"
+  "itemGroup.YouMatter": "YouMatter Redux"
 }

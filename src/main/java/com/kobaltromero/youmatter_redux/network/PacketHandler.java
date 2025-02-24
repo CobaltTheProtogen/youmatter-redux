@@ -2,8 +2,8 @@ package com.kobaltromero.youmatter_redux.network;
 
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import com.kobaltromero.youmatter_redux.producer.ProducerMenu;
-import com.kobaltromero.youmatter_redux.replicator.ReplicatorMenu;
+import com.kobaltromero.youmatter_redux.blocks.producer.ProducerMenu;
+import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorMenu;
 
 public class PacketHandler {
     private PacketHandler() {

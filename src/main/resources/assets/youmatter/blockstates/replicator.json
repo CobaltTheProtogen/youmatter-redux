@@ -1,7 +1,34 @@
 {
   "variants": {
-    "": {
+    "facing=east,active=false": {
+      "model": "youmatter:block/replicator",
+      "y": 90
+    },
+    "facing=north,active=false": {
       "model": "youmatter:block/replicator"
+    },
+    "facing=south,active=false": {
+      "model": "youmatter:block/replicator",
+      "y": 180
+    },
+    "facing=west,active=false": {
+      "model": "youmatter:block/replicator",
+      "y": 270
+    },
+    "facing=east,active=true": {
+      "model": "youmatter:block/replicator",
+      "y": 90
+    },
+    "facing=north,active=true": {
+      "model": "youmatter:block/replicator"
+    },
+    "facing=south,active=true": {
+      "model": "youmatter:block/replicator",
+      "y": 180
+    },
+    "facing=west,active=true": {
+      "model": "youmatter:block/replicator",
+      "y": 270
     }
   }
 }

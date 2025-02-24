@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MOc",
+    "OBO",
+    "bOb"
+  ],
+  "key": {
+    "M": {
+      "tag": "c:plates/iron"
+    },
+    "O": {
+      "tag": "c:obsidians/normal"
+    },
+    "c": {
+      "tag": "c:circuits/basic"
+    },
+    "B": {
+      "item": "youmatter:black_hole"
+    },
+    "b": {
+      "item": "minecraft:bucket"
+    }
+  },
+  "result": {
+    "id": "youmatter:producer"
+  }
+}
