@@ -2,6 +2,7 @@ package com.kobaltromero.youmatter_redux.blocks.replicator;
 
 
 import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
+import com.kobaltromero.youmatter_redux.util.RestrictedItemHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -23,6 +24,8 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import com.kobaltromero.youmatter_redux.ModContent;
@@ -137,31 +140,15 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         }
     };
 
-
     public ItemStackHandler inventory = new ItemStackHandler(5) {
-        @Override
-        public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-            if (slot == 2) {
-                return stack;
-            } else {
-                return super.insertItem(slot, stack, simulate);
-            }
-        }
-
-        @Override
-        public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (slot == 2) {
-                return ItemStack.EMPTY;
-            } else {
-                return super.extractItem(slot, amount, simulate);
-            }
-        }
-
         @Override
         protected void onContentsChanged(int slot) {
             ReplicatorBlockEntity.this.setChanged();
         }
     };
+
+    public RestrictedItemHandler restrictedInventory = new RestrictedItemHandler(inventory);
+
 
     private List<ItemStack> cachedItems;
 
@@ -210,7 +197,6 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                         inventory.insertItem(4, item, false);
                     }
                 }
-
             ItemStack thumbdrive = inventory.getStackInSlot(0);
             if (thumbdrive.isEmpty()) { //in case user removes thumb drive while replicator is in operation
                 inventory.setStackInSlot(2, ItemStack.EMPTY);
@@ -289,7 +275,9 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         containsFluid = tank.getFluidAmount() > 0;
-        level.setBlock(pos, state.setValue(ReplicatorBlock.ACTIVE, isActive).setValue(ReplicatorBlock.CONTAINS_FLUID, containsFluid), 3);
+        if (state.getValue(ReplicatorBlock.ACTIVE) != isActive || state.getValue(ReplicatorBlock.CONTAINS_FLUID) != containsFluid) {
+            level.setBlock(pos, state.setValue(ReplicatorBlock.ACTIVE, isActive).setValue(ReplicatorBlock.CONTAINS_FLUID, containsFluid), 3);
+        }
         currentPartTick++;
     }
 
@@ -391,6 +379,10 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     public AbstractContainerMenu createMenu(int windowID, Inventory playerInventory, Player player) {
         return new ReplicatorMenu(windowID, level, worldPosition, playerInventory, player);
 
+    }
+
+    public RestrictedItemHandler getRestrictedItemHandler() {
+        return restrictedInventory;
     }
 
     public ItemStackHandler getItemHandler() {

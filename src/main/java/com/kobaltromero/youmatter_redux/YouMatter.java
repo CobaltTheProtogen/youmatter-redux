@@ -65,7 +65,7 @@ public class YouMatter {
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModContent.SCANNER_BLOCK_ENTITY.get(), (o, direction) -> o.getEnergyHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModContent.ENCODER_BLOCK_ENTITY.get(), (o, direction) -> o.getItemHandler());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModContent.ENCODER_BLOCK_ENTITY.get(), (o, direction) -> o.getEnergyHandler());
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModContent.REPLICATOR_BLOCK_ENTITY.get(), (o, direction) -> o.getItemHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModContent.REPLICATOR_BLOCK_ENTITY.get(), (o, direction) -> o.getRestrictedItemHandler());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModContent.REPLICATOR_BLOCK_ENTITY.get(), (o, direction) -> o.getEnergyHandler());
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModContent.REPLICATOR_BLOCK_ENTITY.get(), (o, direction) -> o.getFluidHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModContent.PRODUCER_BLOCK_ENTITY.get(), (o, direction) -> o.getItemHandler());
