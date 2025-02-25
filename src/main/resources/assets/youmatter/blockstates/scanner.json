@@ -1,32 +1,17 @@
 {
   "variants": {
-    "facing=east,active=false": {
+    "facing=east": {
       "model": "youmatter:block/scanner",
       "y": 90
     },
-    "facing=north,active=false": {
+    "facing=north": {
       "model": "youmatter:block/scanner"
     },
-    "facing=south,active=false": {
+    "facing=south": {
       "model": "youmatter:block/scanner",
       "y": 180
     },
-    "facing=west,active=false": {
-      "model": "youmatter:block/scanner",
-      "y": 270
-    },
-    "facing=east,active=true": {
-      "model": "youmatter:block/scanner",
-      "y": 90
-    },
-    "facing=north,active=true": {
-      "model": "youmatter:block/scanner"
-    },
-    "facing=south,active=true": {
-      "model": "youmatter:block/scanner",
-      "y": 180
-    },
-    "facing=west,active=true": {
+    "facing=west": {
       "model": "youmatter:block/scanner",
       "y": 270
     }

@@ -21,12 +21,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class MachineEntityBlock extends BaseEntityBlock {
     public static final BooleanProperty ACTIVE = ModBlockStateProperties.ACTIVE;
+    public static final BooleanProperty CONTAINS_FLUID = ModBlockStateProperties.CONTAINS_FLUID;
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     protected MachineEntityBlock(BlockBehaviour.Properties props) {
         super(props);
-        this.registerDefaultState(this.stateDefinition.any().setValue(ACTIVE, false));
+        this.registerDefaultState(this.stateDefinition.any().setValue(ACTIVE, false).setValue(CONTAINS_FLUID, false));
     }
 
     @Override
@@ -61,6 +62,6 @@ public class MachineEntityBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, ACTIVE);
+        builder.add(FACING, ACTIVE, CONTAINS_FLUID);
     }
 }

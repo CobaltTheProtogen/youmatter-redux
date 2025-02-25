@@ -2,11 +2,11 @@
   "parent": "block/cube",
   "textures": {
       "particle": "youmatter:block/basic_side",
-      "north": "youmatter:block/scanner_front",
+      "north": "youmatter:block/producer_front_active",
       "south": "youmatter:block/basic_side",
       "west": "youmatter:block/basic_side",
       "east": "youmatter:block/basic_side",
-      "up": "youmatter:block/scanner_top",
+      "up": "youmatter:block/basic_side",
       "down": "youmatter:block/basic_side"
   }
 }

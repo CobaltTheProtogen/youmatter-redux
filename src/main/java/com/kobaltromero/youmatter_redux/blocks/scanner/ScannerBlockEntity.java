@@ -1,5 +1,6 @@
 package com.kobaltromero.youmatter_redux.blocks.scanner;
 
+import com.kobaltromero.youmatter_redux.items.tiered.thumbdrives.ThumbDriveItem;
 import com.kobaltromero.youmatter_redux.util.GeneralUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -164,7 +165,6 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
                             if (getProgress() < 100) {
                                 setProgress(getProgress() + 1);
                                 myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyScanner.get(), false);
-                                isActive = true;
                             } else {
                                 setProgress(0);
                                 scans++;
@@ -185,12 +185,10 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
                     } else {
                         setProgress(0);
                         scans = 0;
-                        isActive = false;
                         storedItem = currentItem.getItem();
                     }
                 } else {
                     setProgress(0);
-                    isActive = false;
                 }
             }
             level.setBlock(pos, state.setValue(ScannerBlock.ACTIVE, isActive), 3);
@@ -202,6 +200,15 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 
             hasEncoder = false;
         }
+        // Ensure the isActive state remains consistent if conditions are met
+        if (myEnergyStorage != null) {
+            if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyScanner.get() && !inventory.getStackInSlot(1).isEmpty()) {
+                isActive = true;
+            }
+        }
+
+        // Update block state based on isActive variable
+        level.setBlock(pos, state.setValue(ScannerBlock.ACTIVE, isActive), 3);
     }
 
     private boolean isItemAllowed(ItemStack itemStack) {

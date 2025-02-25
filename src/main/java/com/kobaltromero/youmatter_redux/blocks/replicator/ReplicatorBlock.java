@@ -1,6 +1,7 @@
 package com.kobaltromero.youmatter_redux.blocks.replicator;
 
 import com.kobaltromero.youmatter_redux.blocks.MachineEntityBlock;
+import com.kobaltromero.youmatter_redux.blocks.producer.ProducerBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -94,7 +95,7 @@ public class ReplicatorBlock extends MachineEntityBlock {
         if (!level.isClientSide) {
             if (be instanceof ReplicatorBlockEntity replicator) {
                 boolean hasSignal = level.hasNeighborSignal(pos);
-                if (replicator.isActivated() != hasSignal) {
+                if (hasSignal != replicator.isActivated()) {
                     replicator.setActivated(hasSignal);
                     level.updateNeighborsAt(pos, state.getBlock());
                 }
@@ -102,15 +103,16 @@ public class ReplicatorBlock extends MachineEntityBlock {
         }
     }
 
-
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof ReplicatorBlockEntity replicator) {
             boolean isPowered = level.hasNeighborSignal(pos);
-            replicator.setActivated(isPowered);
-            if (isPowered) {
-                level.scheduleTick(pos, state.getBlock(), 4); // Schedule a tick if powered
+            if (replicator.isActivated() != isPowered) {
+                replicator.setActivated(isPowered);
+                if (isPowered) {
+                    level.scheduleTick(pos, state.getBlock(), 4); // Schedule a tick if powered
+                }
             }
         }
     }

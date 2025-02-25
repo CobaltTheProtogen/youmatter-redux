@@ -1,6 +1,4 @@
 package com.kobaltromero.youmatter_redux;
-
-
 import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
 import com.kobaltromero.youmatter_redux.items.parts.*;
 import com.kobaltromero.youmatter_redux.items.tiered.BlackHoleItem;
@@ -69,24 +67,24 @@ public class ModContent {
     public static final DeferredBlock<ProducerBlock> PRODUCER_BLOCK = BLOCKS.registerBlock("producer", props -> new ProducerBlock(props.strength(5.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().lightLevel(state -> state.getValue(ModBlockStateProperties.ACTIVE) ? 7 : 0)));
     public static final DeferredHolder<MenuType<?>, MenuType<ProducerMenu>> PRODUCER_MENU = MENU_TYPES.register("producer", () -> IMenuTypeExtension.create((windowId, inv, data) -> new ProducerMenu(windowId, inv.player.level(), data.readBlockPos(), inv, inv.player)));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ProducerBlockEntity>> PRODUCER_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("creator", () -> BlockEntityType.Builder.of(ProducerBlockEntity::new, PRODUCER_BLOCK.get()).build(null));
-    public static final DeferredItem<ProducerBlockItem> PRODUCER_BLOCK_ITEM = ITEMS.registerItem("producer", props -> new ProducerBlockItem(PRODUCER_BLOCK.get(), props, TieredBlockItem.Tier.ULTIMATE));
+    public static final DeferredItem<ProducerBlockItem> PRODUCER_BLOCK_ITEM = ITEMS.registerItem("producer", props -> new ProducerBlockItem(PRODUCER_BLOCK.get(), props, TieredBlockItem.Tier.BASIC));
 
     public static final DeferredBlock<ReplicatorBlock> REPLICATOR_BLOCK = BLOCKS.registerBlock("replicator", props -> new ReplicatorBlock(props.strength(5.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().lightLevel(state -> state.getValue(ModBlockStateProperties.ACTIVE) ? 7 : 0)));
     public static final DeferredHolder<MenuType<?>, MenuType<ReplicatorMenu>> REPLICATOR_MENU = MENU_TYPES.register("replicator", () -> IMenuTypeExtension.create((windowId, inv, data) -> new ReplicatorMenu(windowId, inv.player.level(), data.readBlockPos(), inv, inv.player)));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ReplicatorBlockEntity>> REPLICATOR_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("replicator", () -> BlockEntityType.Builder.of(ReplicatorBlockEntity::new, REPLICATOR_BLOCK.get()).build(null));
-    public static final DeferredItem<ReplicatorBlockItem> REPLICATOR_BLOCK_ITEM = ITEMS.registerItem("replicator", props -> new ReplicatorBlockItem(REPLICATOR_BLOCK.get(), props, TieredBlockItem.Tier.ELITE));
+    public static final DeferredItem<ReplicatorBlockItem> REPLICATOR_BLOCK_ITEM = ITEMS.registerItem("replicator", props -> new ReplicatorBlockItem(REPLICATOR_BLOCK.get(), props, TieredBlockItem.Tier.BASIC));
 
     public static final DeferredHolder<FluidType, FluidType> STABILIZER_TYPE = FLUID_TYPES.register("stabilizer", StabilizerFluidType::new);
     public static final DeferredHolder<Fluid, FlowingFluid> STABILIZER = FLUIDS.register("stabilizer", () -> new BaseFlowingFluid.Source(ModContent.STABILIZER_PROPERIES));
     public static final DeferredHolder<Fluid, FlowingFluid> STABILIZER_FLOWING = FLUIDS.register("stabilizer_flowing", () -> new BaseFlowingFluid.Flowing(ModContent.STABILIZER_PROPERIES));
-    public static final DeferredHolder<Block, StabilizerFluidBlock> STABILIZER_FLUID_BLOCK = BLOCKS.register("stabilizer_fluid_block", () -> new StabilizerFluidBlock(STABILIZER.get(), BlockBehaviour.Properties.of().noCollission().strength(1.0F).noLootTable()));
+    public static final DeferredHolder<Block, StabilizerFluidBlock> STABILIZER_FLUID_BLOCK = BLOCKS.register("stabilizer_fluid_block", () -> new StabilizerFluidBlock(STABILIZER.get(), BlockBehaviour.Properties.of().noCollission().strength(1.0F).noLootTable().replaceable()));
     public static final DeferredHolder<Item, BucketItem> STABILIZER_BUCKET = ITEMS.register("stabilizer_bucket", () -> new BucketItem(STABILIZER.get(), new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
     public static final BaseFlowingFluid.Properties STABILIZER_PROPERIES = new BaseFlowingFluid.Properties(STABILIZER_TYPE, STABILIZER, STABILIZER_FLOWING).bucket(STABILIZER_BUCKET).block(STABILIZER_FLUID_BLOCK);
 
     public static final DeferredHolder<FluidType, FluidType> UMATTER_TYPE = FLUID_TYPES.register("umatter", UMatterFluidType::new);
     public static final DeferredHolder<Fluid, FlowingFluid> UMATTER = FLUIDS.register("umatter", () -> new BaseFlowingFluid.Source(ModContent.UMATTER_PROPERTIES));
     public static final DeferredHolder<Fluid, FlowingFluid> UMATTER_FLOWING = FLUIDS.register("umatter_flowing", () -> new BaseFlowingFluid.Flowing(ModContent.UMATTER_PROPERTIES));
-    public static final DeferredHolder<Block, UMatterFluidBlock> UMATTER_FLUID_BLOCK = BLOCKS.register("umatter_fluid_block", () -> new UMatterFluidBlock(UMATTER.get(), BlockBehaviour.Properties.of().noCollission().strength(1.0F).noLootTable()));
+    public static final DeferredHolder<Block, UMatterFluidBlock> UMATTER_FLUID_BLOCK = BLOCKS.register("umatter_fluid_block", () -> new UMatterFluidBlock(UMATTER.get(), BlockBehaviour.Properties.of().noCollission().strength(1.0F).noLootTable().replaceable()));
     public static final DeferredHolder<Item, BucketItem> UMATTER_BUCKET = ITEMS.register("umatter_bucket", () -> new BucketItem(UMATTER.get(), new Item.Properties().stacksTo(1)));
     public static final BaseFlowingFluid.Properties UMATTER_PROPERTIES = new BaseFlowingFluid.Properties(UMATTER_TYPE, UMATTER, UMATTER_FLOWING).bucket(UMATTER_BUCKET).block(UMATTER_FLUID_BLOCK);
 

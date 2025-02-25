@@ -182,6 +182,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public void tick(Level level, BlockPos pos, BlockState state) {
         boolean isActive = false;
+        boolean containsFluid = false;
         if (currentPartTick == 5) {
             currentPartTick = 0;
             if (inventory != null)
@@ -237,7 +238,6 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                                                 tank.drain(GeneralUtils.getUMatterAmountForItem(currentItem.getItem()), IFluidHandler.FluidAction.EXECUTE);
                                                 progress++;
                                                 myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
-                                                isActive = true;
                                             }
                                         }
                                     }
@@ -262,7 +262,6 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                                                         if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get()) {
                                                             progress++;
                                                             myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyReplicator.get(), false);
-                                                            isActive = true;
                                                         }
                                                     }
                                                 }
@@ -281,8 +280,16 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                     }
                 }
             }
-            level.setBlock(pos, state.setValue(ReplicatorBlock.ACTIVE, isActive), 3);
         }
+        // Ensure the isActive state remains consistent if conditions are met
+        if (currentItem != null && myEnergyStorage != null) {
+            if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyReplicator.get() && (tank.getFluidAmount() >= GeneralUtils.getUMatterAmountForItem(currentItem.getItem()) || progress > 0) && isActivated()) {
+                isActive = true;
+            }
+        }
+
+        containsFluid = tank.getFluidAmount() > 0;
+        level.setBlock(pos, state.setValue(ReplicatorBlock.ACTIVE, isActive).setValue(ReplicatorBlock.CONTAINS_FLUID, containsFluid), 3);
         currentPartTick++;
     }
 

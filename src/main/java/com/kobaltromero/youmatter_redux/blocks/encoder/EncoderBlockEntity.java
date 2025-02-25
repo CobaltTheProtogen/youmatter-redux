@@ -1,7 +1,9 @@
 package com.kobaltromero.youmatter_redux.blocks.encoder;
 
+import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorBlock;
 import com.kobaltromero.youmatter_redux.blocks.scanner.ScannerBlockEntity;
 import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
+import com.kobaltromero.youmatter_redux.util.GeneralUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -173,21 +175,16 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
                             if (getEnergy() >= YMConfig.CONFIG.energyEncoder.get()) {
                                 progress++;
                                 myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyEncoder.get(), false);
-                                isActive = true; // Machine is active when it has enough power to encode
-                            } else {
-                                isActive = false; // Machine is inactive when it doesn't have enough power to encode
                             }
                         } else {
                             list.add(processIS);
                             inventory.getStackInSlot(1).set(ModContent.THUMBDRIVE_CONTAINER.get(), ThumbDriveContents.fromItems(list));
                             queue.removeIf(item -> ItemStack.isSameItem(item, processIS));
                             progress = 0;
-                            isActive = true; // Machine is active when encoding is complete
                         }
                     } else {
                         queue.removeIf(item -> ItemStack.isSameItem(item, processIS));
                         progress = 0;
-                        isActive = true; // Machine is active when processing the item
                     }
                 } else {
                     // Reset progress if the thumb drive is taken out
@@ -196,13 +193,14 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
             } else {
                 // Remove empty item stack from the queue to prevent it from being processed again
                 queue.remove(processIS);
-                isActive = false; // Machine is inactive when processing empty item stack
             }
         }
 
-        // Set isActive to false when queue is empty
-        if (queue.isEmpty()) {
-            isActive = false;
+        // Ensure the isActive state remains consistent if conditions are met
+        if (myEnergyStorage != null) {
+            if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyEncoder.get() && !queue.isEmpty() && inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem) {
+                isActive = true;
+            }
         }
 
         // Update block state based on isActive variable

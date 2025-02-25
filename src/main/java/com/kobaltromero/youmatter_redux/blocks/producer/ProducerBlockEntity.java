@@ -3,6 +3,7 @@ package com.kobaltromero.youmatter_redux.blocks.producer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -62,10 +63,6 @@ public class ProducerBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged(int slot) {
             ProducerBlockEntity.this.setChanged();
-        }
-        @Override
-        public @NotNull ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            return stack;
         }
     };
 
@@ -234,19 +231,18 @@ public class ProducerBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
+        boolean isActive = false;
+        boolean containsFluid = false;
         if (currentPartTick == 40) { // 2 sec
-            boolean isActive = false;
             if (isActivated()) {
                 if (getEnergy() >= 0.3f * 1000000 && sTank.getFluidAmount() >= 125) { // if energy more than 30 % of max energy
                     if (uTank.getFluidAmount() + YMConfig.CONFIG.productionPerTick.get() <= MAX_UMATTER) {
                         sTank.drain(125, IFluidHandler.FluidAction.EXECUTE);
                         uTank.fill(new FluidStack(ModContent.UMATTER.get(), YMConfig.CONFIG.productionPerTick.get()), IFluidHandler.FluidAction.EXECUTE);
                         myEnergyStorage.extractEnergy(Math.round(getEnergy() / 3f), false);
-                        isActive = true;
                     }
                 }
             }
-            level.setBlock(pos, state.setValue(ProducerBlock.ACTIVE, isActive), 3);
             //Auto-outputting U-Matter
             Object[] neighborTE = getNeighborTileEntity(pos);
             if (neighborTE != null) {
@@ -315,6 +311,15 @@ public class ProducerBlockEntity extends BlockEntity implements MenuProvider {
         } else {
             currentPartTick++;
         }
+        // Ensure the isActive state remains consistent if conditions are met
+        if (myEnergyStorage != null) {
+            if (getEnergy() >= 0.3f * 1000000 && sTank.getFluidAmount() >= 125 && isActivated()) {
+                isActive = true;
+            }
+        }
+
+        containsFluid = uTank.getFluidAmount() > 0;
+        level.setBlock(pos, state.setValue(ProducerBlock.ACTIVE, isActive).setValue(ProducerBlock.CONTAINS_FLUID, containsFluid), 3);
     }
 
 

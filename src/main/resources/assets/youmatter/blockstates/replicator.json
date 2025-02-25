@@ -1,33 +1,63 @@
 {
   "variants": {
-    "facing=east,active=false": {
+    "facing=east,active=false,contains_fluid=false": {
+      "model": "youmatter:block/replicator_empty",
+      "y": 90
+    },
+    "facing=north,active=false,contains_fluid=false": {
+      "model": "youmatter:block/replicator_empty"
+    },
+    "facing=south,active=false,contains_fluid=false": {
+      "model": "youmatter:block/replicator_empty",
+      "y": 180
+    },
+    "facing=west,active=false,contains_fluid=false": {
+      "model": "youmatter:block/replicator_empty",
+      "y": 270
+    },
+    "facing=east,active=false,contains_fluid=true": {
       "model": "youmatter:block/replicator",
       "y": 90
     },
-    "facing=north,active=false": {
+    "facing=north,active=false,contains_fluid=true": {
       "model": "youmatter:block/replicator"
     },
-    "facing=south,active=false": {
+    "facing=south,active=false,contains_fluid=true": {
       "model": "youmatter:block/replicator",
       "y": 180
     },
-    "facing=west,active=false": {
+    "facing=west,active=false,contains_fluid=true": {
       "model": "youmatter:block/replicator",
       "y": 270
     },
-    "facing=east,active=true": {
-      "model": "youmatter:block/replicator",
+    "facing=east,active=true,contains_fluid=false": {
+      "model": "youmatter:block/replicator_active_empty",
       "y": 90
     },
-    "facing=north,active=true": {
-      "model": "youmatter:block/replicator"
+    "facing=north,active=true,contains_fluid=false": {
+      "model": "youmatter:block/replicator_active_empty"
     },
-    "facing=south,active=true": {
-      "model": "youmatter:block/replicator",
+    "facing=south,active=true,contains_fluid=false": {
+      "model": "youmatter:block/replicator_active_empty",
       "y": 180
     },
-    "facing=west,active=true": {
-      "model": "youmatter:block/replicator",
+    "facing=west,active=true,contains_fluid=false": {
+      "model": "youmatter:block/replicator_active_empty",
+      "y": 270
+    },
+    "facing=east,active=true,contains_fluid=true": {
+      "model": "youmatter:block/replicator_active",
+      "y": 90
+    },
+    "facing=north,active=true,contains_fluid=true": {
+      "model": "youmatter:block/replicator_active"
+    },
+    "facing=south,active=true,contains_fluid=true": {
+      "model": "youmatter:block/replicator_active",
+      "y": 180
+    },
+    "facing=west,active=true,contains_fluid=true": {
+      "model": "youmatter:block/replicator_active",
       "y": 270
     }
   }
