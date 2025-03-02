@@ -1,6 +1,8 @@
 package com.kobaltromero.youmatter_redux.items.tiered.machines;
 
-import com.kobaltromero.youmatter_redux.items.tiered.TieredBlockItem;
+import com.kobaltromero.youmatter_redux.items.tiered.MachineBlockItem;
+import com.kobaltromero.youmatter_redux.util.ITier;
+import com.kobaltromero.youmatter_redux.util.MachineType;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -11,9 +13,9 @@ import net.minecraft.world.level.block.Block;
 
 import java.util.List;
 
-public class ProducerBlockItem extends TieredBlockItem {
-    public ProducerBlockItem(Block block, Properties props, Tier tier) {
-        super(block, props, tier);
+public class ProducerBlockItem extends MachineBlockItem {
+    public ProducerBlockItem(Block block, Properties props, MachineType type, ITier tier) {
+        super(block, props, type, tier);
     }
 
     @Override

@@ -4,7 +4,21 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import com.kobaltromero.youmatter_redux.YMConfig;
 
+import java.text.DecimalFormat;
+
 public class GeneralUtils {
+
+    private static final DecimalFormat decimalFormat = new DecimalFormat("0.##");
+
+    public static String formatLargeNumber(int number) {
+        if (number >= 1_000_000_000) return decimalFormat.format(number / 1_000_000_000f) + " GFE";
+        if (number >= 1_000_000) return decimalFormat.format(number / 1_000_000f) + " MFE";
+        if (number >= 1_000) return decimalFormat.format(number / 1_000f) + " kFE";
+        if (number >= 0) return number + " FE";
+
+        return Float.toString(number).replaceAll("\\.?0*$", "");
+    }
+
 
     public static int getScansRequiredForItem(Item item) {
         if(YMConfig.CONFIG.getOverride(RegistryUtil.getRegistryName(item).toString()) != null) {

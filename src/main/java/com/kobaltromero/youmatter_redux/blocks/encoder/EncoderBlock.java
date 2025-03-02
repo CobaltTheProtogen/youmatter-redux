@@ -1,6 +1,8 @@
 package com.kobaltromero.youmatter_redux.blocks.encoder;
 
-import com.kobaltromero.youmatter_redux.blocks.MachineEntityBlock;
+import com.kobaltromero.youmatter_redux.blocks.generic.MachineBlock;
+import com.kobaltromero.youmatter_redux.util.ITier;
+import com.kobaltromero.youmatter_redux.util.MachineType;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Containers;
@@ -21,14 +23,14 @@ import com.kobaltromero.youmatter_redux.ModContent;
 
 import javax.annotation.Nullable;
 
-public class EncoderBlock extends MachineEntityBlock {
+public class EncoderBlock extends MachineBlock {
 
-    public EncoderBlock(BlockBehaviour.Properties props) {
-        super(props);
+    public EncoderBlock(BlockBehaviour.Properties props, int max_energy, MachineType type, ITier tier) {
+        super(props, max_energy, type, tier);
     }
 
     @Override
-    protected MapCodec<? extends MachineEntityBlock> codec() {
+    protected MapCodec<? extends MachineBlock> codec() {
         return codec();
     }
 
@@ -63,7 +65,6 @@ public class EncoderBlock extends MachineEntityBlock {
         }
         super.onRemove(state, level, pos, newState, isMoving);
     }
-
     /**
      * EVENT that is called when you right-click the block,
      */

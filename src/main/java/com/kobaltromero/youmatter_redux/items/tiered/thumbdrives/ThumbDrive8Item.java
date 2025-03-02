@@ -1,8 +1,10 @@
 package com.kobaltromero.youmatter_redux.items.tiered.thumbdrives;
 
+import com.kobaltromero.youmatter_redux.util.ITier;
+
 public class ThumbDrive8Item extends ThumbDriveItem {
 
-    public ThumbDrive8Item(Properties properties, Tier tier) {
+    public ThumbDrive8Item(Properties properties, ITier tier) {
         super(properties, tier);
     }
 

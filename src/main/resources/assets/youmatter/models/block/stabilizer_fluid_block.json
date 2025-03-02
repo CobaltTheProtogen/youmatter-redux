@@ -1,6 +1,6 @@
 {
     "textures": {
-        "particle": "youmatter:block/stabilizer_still"
+        "particle": "youmatter:block/fluid/stabilizer/still"
     }
 }
 

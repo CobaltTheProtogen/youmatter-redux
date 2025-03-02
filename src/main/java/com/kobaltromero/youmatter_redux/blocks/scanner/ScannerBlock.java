@@ -1,6 +1,8 @@
 package com.kobaltromero.youmatter_redux.blocks.scanner;
 
-import com.kobaltromero.youmatter_redux.blocks.MachineEntityBlock;
+import com.kobaltromero.youmatter_redux.blocks.generic.MachineBlock;
+import com.kobaltromero.youmatter_redux.util.ITier;
+import com.kobaltromero.youmatter_redux.util.MachineType;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Containers;
@@ -21,14 +23,14 @@ import com.kobaltromero.youmatter_redux.ModContent;
 
 import javax.annotation.Nullable;
 
-public class ScannerBlock extends MachineEntityBlock {
+public class ScannerBlock extends MachineBlock {
 
-    public ScannerBlock(BlockBehaviour.Properties props) {
-        super(props);
+    public ScannerBlock(BlockBehaviour.Properties props, int max_energy, MachineType type, ITier tier) {
+        super(props, max_energy, type, tier);
     }
 
     @Override
-    protected @NotNull MapCodec<? extends MachineEntityBlock> codec() {
+    protected @NotNull MapCodec<? extends MachineBlock> codec() {
         return codec();
     }
 

@@ -1,6 +1,5 @@
 package com.kobaltromero.youmatter_redux.blocks.scanner;
 
-import com.kobaltromero.youmatter_redux.items.tiered.thumbdrives.ThumbDriveItem;
 import com.kobaltromero.youmatter_redux.util.GeneralUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,6 +34,7 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
     public boolean hasEncoder = false;
     private int scans = 0;
     private Item storedItem = null;
+    private boolean isActive = false;
 
     public ScannerBlockEntity(BlockPos pos, BlockState state) {
         super(ModContent.SCANNER_BLOCK_ENTITY.get(), pos, state);
@@ -53,16 +53,6 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged(int slot) {
             ScannerBlockEntity.this.setChanged();
-        }
-
-        @Override
-        public @NotNull ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            // Only allow insertion into slot 1 (index 0)
-            if (slot == 1) {
-                return super.insertItem(slot, stack, simulate);
-            }
-            // If trying to insert into any other slot, reject the insertion
-            return stack;
         }
     };
 
@@ -145,69 +135,61 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
-        BlockPos encoderPos = getNeighborEncoder(this.worldPosition);
-        boolean isActive = false;
-        if (encoderPos != null) {
-            if (!hasEncoder) {
-                setChanged();
-                level.sendBlockUpdated(pos, state, state, 3);
-            }
+        if (level.isClientSide()) return;
 
-            hasEncoder = true;
+        BlockPos encoderPos = getNeighborEncoder(this.worldPosition);
+        boolean encoderExists = encoderPos != null;
+
+        if (encoderExists && !hasEncoder) {
+            setChanged();
+            level.sendBlockUpdated(pos, state, state, 3);
+        }
+
+        hasEncoder = encoderExists;
+        isActive = myEnergyStorage != null && myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyScanner.get() && !inventory.getStackInSlot(1).isEmpty();
+
+        if (encoderExists) {
             if (inventory != null) {
                 ItemStack currentItem = inventory.getStackInSlot(1);
-                if (!currentItem.isEmpty() && isItemAllowed(currentItem)) {
-                    if (storedItem == null) {
-                        storedItem = currentItem.getItem();
-                    }
-                    if (currentItem.getItem() == storedItem) {
-                        if (getEnergy() > YMConfig.CONFIG.energyScanner.get()) {
-                            if (getProgress() < 100) {
-                                setProgress(getProgress() + 1);
-                                myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyScanner.get(), false);
-                            } else {
-                                setProgress(0);
-                                scans++;
-                                if (currentItem.isStackable()) {
-                                    currentItem.shrink(1);
-                                } else {
-                                    inventory.setStackInSlot(1, ItemStack.EMPTY);
-                                }
-                                if (scans >= getScansRequired(currentItem.getItem())) {
-                                    ItemStack encodedItem = new ItemStack(currentItem.getItem(), 1);
-                                    // Notifying the neighboring encoder of this scanner having finished its operation
-                                    ((EncoderBlockEntity) Objects.requireNonNull(level.getBlockEntity(encoderPos))).ignite(encodedItem);
-                                    scans = 0;
-                                    storedItem = null;
-                                }
-                            }
-                        }
-                    } else {
+                boolean hasCurrentItem = !currentItem.isEmpty();
+                boolean itemAllowed = isItemAllowed(currentItem);
+
+                if (hasCurrentItem && itemAllowed) {
+                    if (storedItem == null || currentItem.getItem() != storedItem) {
                         setProgress(0);
                         scans = 0;
                         storedItem = currentItem.getItem();
+                    } else if (getEnergy() > YMConfig.CONFIG.energyScanner.get()) {
+                        if (getProgress() < 100) {
+                            setProgress(getProgress() + 1);
+                            myEnergyStorage.extractEnergy(YMConfig.CONFIG.energyScanner.get(), false);
+                        } else {
+                            setProgress(0);
+                            scans++;
+
+                            if (currentItem.isStackable()) {
+                                currentItem.shrink(1);
+                            } else {
+                                inventory.setStackInSlot(1, ItemStack.EMPTY);
+                            }
+
+                            if (scans >= getScansRequired(currentItem.getItem())) {
+                                ItemStack encodedItem = new ItemStack(currentItem.getItem(), 1);
+                                ((EncoderBlockEntity) Objects.requireNonNull(level.getBlockEntity(encoderPos))).ignite(encodedItem);
+                                scans = 0;
+                                storedItem = null;
+                            }
+                        }
                     }
                 } else {
                     setProgress(0);
                 }
             }
-            level.setBlock(pos, state.setValue(ScannerBlock.ACTIVE, isActive), 3);
-        } else {
-            if (hasEncoder) {
-                setChanged();
-                level.sendBlockUpdated(pos, state, state, 3);
-            }
-
-            hasEncoder = false;
-        }
-        // Ensure the isActive state remains consistent if conditions are met
-        if (myEnergyStorage != null) {
-            if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyScanner.get() && !inventory.getStackInSlot(1).isEmpty()) {
-                isActive = true;
-            }
+        } else if (hasEncoder) {
+            setChanged();
+            level.sendBlockUpdated(pos, state, state, 3);
         }
 
-        // Update block state based on isActive variable
         level.setBlock(pos, state.setValue(ScannerBlock.ACTIVE, isActive), 3);
     }
 
@@ -224,7 +206,7 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public void setRemoved() {
         super.setRemoved();
-        level.invalidateCapabilities(worldPosition);
+        this.invalidateCapabilities();
     }
 
     @Nullable

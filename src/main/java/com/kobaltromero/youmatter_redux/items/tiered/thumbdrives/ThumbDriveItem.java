@@ -3,6 +3,7 @@ package com.kobaltromero.youmatter_redux.items.tiered.thumbdrives;
 import com.kobaltromero.youmatter_redux.ModContent;
 import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
 import com.kobaltromero.youmatter_redux.items.tiered.TieredItem;
+import com.kobaltromero.youmatter_redux.util.ITier;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -14,7 +15,7 @@ import java.util.List;
 
 public class ThumbDriveItem extends TieredItem {
 
-    public ThumbDriveItem(Properties properties, Tier tier) {
+    public ThumbDriveItem(Properties properties, ITier tier) {
         super(properties, tier);
     }
 

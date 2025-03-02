@@ -1,9 +1,6 @@
 package com.kobaltromero.youmatter_redux.blocks.encoder;
 
-import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorBlock;
-import com.kobaltromero.youmatter_redux.blocks.scanner.ScannerBlockEntity;
 import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
-import com.kobaltromero.youmatter_redux.util.GeneralUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -36,6 +33,10 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
 
     private List<ItemStack> queue = new ArrayList<>();
 
+    private boolean isActive = false;
+
+    private boolean encoded = false;
+
     public EncoderBlockEntity(BlockPos pos, BlockState state) {
         super(ModContent.ENCODER_BLOCK_ENTITY.get(), pos, state);
     }
@@ -44,16 +45,6 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged(int slot) {
             EncoderBlockEntity.this.setChanged();
-        }
-
-        @Override
-        public @NotNull ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            // Only allow insertion into slot 1 (index 0)
-            if (slot == 1) {
-                return super.insertItem(slot, stack, simulate);
-            }
-            // If trying to insert into any other slot, reject the insertion
-            return stack;
         }
     };
 
@@ -138,7 +129,7 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public void setRemoved() {
         super.setRemoved();
-        level.invalidateCapabilities(worldPosition);
+        this.invalidateCapabilities();
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, EncoderBlockEntity be) {
@@ -146,7 +137,7 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
-        boolean isActive = false;
+        if(level.isClientSide()) return;
         if (!queue.isEmpty()) {
             ItemStack processIS = queue.get(queue.size() - 1);
 
@@ -162,12 +153,9 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
                         }
                     }
 
-                    boolean encoded = false;
                     for (ItemStack encodedStack : list) {
-                        if (ItemStack.isSameItem(encodedStack, processIS)) {
-                            encoded = true;
-                            break;
-                        }
+                        encoded = ItemStack.isSameItem(encodedStack, processIS);
+                        break;
                     }
 
                     if (!encoded && list.size() < thumb.getMaxStorageInKb()) {
@@ -197,11 +185,7 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         // Ensure the isActive state remains consistent if conditions are met
-        if (myEnergyStorage != null) {
-            if (myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyEncoder.get() && !queue.isEmpty() && inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem) {
-                isActive = true;
-            }
-        }
+        isActive = myEnergyStorage != null && myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyEncoder.get() && !queue.isEmpty() && inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem;
 
         // Update block state based on isActive variable
         level.setBlock(pos, state.setValue(EncoderBlock.ACTIVE, isActive), 3);

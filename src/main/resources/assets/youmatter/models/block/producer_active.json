@@ -1,12 +1,12 @@
 {
   "parent": "block/cube",
   "textures": {
-      "particle": "youmatter:block/basic_side",
-      "north": "youmatter:block/producer_front_active",
-      "south": "youmatter:block/basic_side",
-      "west": "youmatter:block/basic_side",
-      "east": "youmatter:block/basic_side",
-      "up": "youmatter:block/basic_side",
-      "down": "youmatter:block/basic_side"
+    "particle": "youmatter:block/producer/mk1/side",
+    "north": "youmatter:block/producer/mk1/active/front",
+    "south": "youmatter:block/producer/mk1/side",
+    "west": "youmatter:block/producer/mk1/side",
+    "east": "youmatter:block/producer/mk1/side",
+    "up": "youmatter:block/producer/mk1/top",
+    "down": "youmatter:block/producer/mk1/bottom"
   }
 }

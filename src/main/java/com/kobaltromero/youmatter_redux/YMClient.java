@@ -6,7 +6,7 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.NotNull;
-import com.kobaltromero.youmatter_redux.blocks.producer.ProducerScreen;
+import com.kobaltromero.youmatter_redux.blocks.basic.producer.ProducerScreen;
 import com.kobaltromero.youmatter_redux.blocks.encoder.EncoderScreen;
 import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorScreen;
 import com.kobaltromero.youmatter_redux.blocks.scanner.ScannerScreen;
@@ -26,8 +26,8 @@ public class YMClient {
 
     private static void registerFluidType(RegisterClientExtensionsEvent event, FluidType fluidType, String fluidName) {
         event.registerFluidType(new IClientFluidTypeExtensions() {
-            private final ResourceLocation STILL_TEXTURE = ResourceLocation.fromNamespaceAndPath(YouMatter.MODID, "block/" + fluidName + "_still");
-            private final ResourceLocation FLOWING_TEXTURE = ResourceLocation.fromNamespaceAndPath(YouMatter.MODID, "block/" + fluidName + "_flow");
+            private final ResourceLocation STILL_TEXTURE = ResourceLocation.fromNamespaceAndPath(YouMatter.MODID, "block/fluid/" + fluidName + "/still");
+            private final ResourceLocation FLOWING_TEXTURE = ResourceLocation.fromNamespaceAndPath(YouMatter.MODID, "block/fluid/" + fluidName + "/flow");
 
             @Override
             public @NotNull ResourceLocation getStillTexture() {

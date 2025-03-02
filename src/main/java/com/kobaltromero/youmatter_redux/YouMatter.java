@@ -25,7 +25,7 @@ import java.util.List;
 @Mod(YouMatter.MODID)
 public class YouMatter {
     public static final String MODID = "youmatter";
-    public static final Logger logger = LogManager.getLogger();
+    public static final Logger LOGGER = LogManager.getLogger();
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_MODE_TABS.register("tab", () -> CreativeModeTab.builder()
             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
@@ -35,7 +35,11 @@ public class YouMatter {
                 output.acceptAll(List.of(
                         new ItemStack(ModContent.SCANNER_BLOCK.get()),
                         new ItemStack(ModContent.ENCODER_BLOCK.get()),
-                        new ItemStack(ModContent.PRODUCER_BLOCK.get()),
+                        new ItemStack(ModContent.BASIC_PRODUCER_BLOCK.get()),
+                        new ItemStack(ModContent.ADVANCED_PRODUCER_BLOCK.get()),
+                        new ItemStack(ModContent.ELITE_PRODUCER_BLOCK.get()),
+                        new ItemStack(ModContent.ULTIMATE_PRODUCER_BLOCK.get()),
+                        new ItemStack(ModContent.CREATIVE_PRODUCER_BLOCK.get()),
                         new ItemStack(ModContent.REPLICATOR_BLOCK.get()),
                         new ItemStack(ModContent.IRON_PLATE_ITEM.get()),
                         new ItemStack(ModContent.BLACK_HOLE_ITEM.get()),
@@ -65,12 +69,10 @@ public class YouMatter {
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModContent.SCANNER_BLOCK_ENTITY.get(), (o, direction) -> o.getEnergyHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModContent.ENCODER_BLOCK_ENTITY.get(), (o, direction) -> o.getItemHandler());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModContent.ENCODER_BLOCK_ENTITY.get(), (o, direction) -> o.getEnergyHandler());
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModContent.REPLICATOR_BLOCK_ENTITY.get(), (o, direction) -> o.getRestrictedItemHandler());
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModContent.REPLICATOR_BLOCK_ENTITY.get(), (o, direction) -> o.getEnergyHandler());
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModContent.REPLICATOR_BLOCK_ENTITY.get(), (o, direction) -> o.getFluidHandler());
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModContent.PRODUCER_BLOCK_ENTITY.get(), (o, direction) -> o.getItemHandler());
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModContent.PRODUCER_BLOCK_ENTITY.get(), (o, direction) -> o.getEnergyHandler());
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModContent.PRODUCER_BLOCK_ENTITY.get(), (o, direction) -> o.getFluidHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModContent.MACHINE_BLOCK_ENTITY.get(), (o, direction) -> o.getRestrictedItemHandler());
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModContent.MACHINE_BLOCK_ENTITY.get(), (o, direction) -> o.getFluidHandler());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModContent.MACHINE_BLOCK_ENTITY.get(), (o, direction) -> o.getEnergyHandler());
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModContent.MACHINE_BLOCK_ENTITY.get(), (o, direction) -> o.getFluidHandler());
         // event.registerItem(Capabilities.FluidHandler.ITEM, ModContent.FLUID_CELL.get());
     }
 
@@ -81,6 +83,11 @@ public class YouMatter {
                 PacketChangeSettingsProducerServer.TYPE,
                 PacketChangeSettingsProducerServer.STREAM_CODEC,
                 PacketHandler.ProducerSettings::handle
+        );
+        registrar.playToServer(
+                PacketFillBucket.TYPE,
+                PacketFillBucket.STREAM_CODEC,
+                PacketHandler.FillBucket::handle
         );
         registrar.playToServer(
                 PacketShowNext.TYPE,

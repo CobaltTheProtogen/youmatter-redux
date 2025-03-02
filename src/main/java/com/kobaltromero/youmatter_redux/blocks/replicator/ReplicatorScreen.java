@@ -1,5 +1,8 @@
 package com.kobaltromero.youmatter_redux.blocks.replicator;
 
+import com.kobaltromero.youmatter_redux.block_entities.MachineBlockEntity;
+import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorMenu;
+import com.kobaltromero.youmatter_redux.network.PacketChangeSettingsReplicatorServer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,7 +24,6 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.network.PacketDistributor;
 import com.kobaltromero.youmatter_redux.ModContent;
 import com.kobaltromero.youmatter_redux.YouMatter;
-import com.kobaltromero.youmatter_redux.network.PacketChangeSettingsReplicatorServer;
 import com.kobaltromero.youmatter_redux.network.PacketShowNext;
 import com.kobaltromero.youmatter_redux.network.PacketShowPrevious;
 import com.kobaltromero.youmatter_redux.util.DisplaySlot;
@@ -36,13 +38,13 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
     private static final int WIDTH = 176;
     private static final int HEIGHT = 168;
 
-    private ReplicatorBlockEntity replicator;
+    private MachineBlockEntity machine;
 
     private static final ResourceLocation GUI = ResourceLocation.fromNamespaceAndPath(YouMatter.MODID, "textures/gui/replicator.png");
 
     public ReplicatorScreen(ReplicatorMenu container, Inventory inv, Component name) {
         super(container, inv, name);
-        this.replicator = container.replicator;
+        this.machine = container.machine;
     }
 
     @Override
@@ -51,22 +53,22 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
         int relY = (this.height - HEIGHT) / 2;
         guiGraphics.blit(GUI, relX, relY, 0, 0, WIDTH, HEIGHT);
 
-        drawFluidTank(guiGraphics, 26, 20, replicator.getTank());
+        drawFluidTank(guiGraphics, 26, 20, machine.getTank());
 
     }
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        drawEnergyBolt(guiGraphics, replicator.getEnergy());
-        drawActiveIcon(guiGraphics, replicator.isActivated());
-        drawModeIcon(guiGraphics, replicator.isCurrentMode());
-        drawProgressArrow(guiGraphics, replicator.getProgress());
+        drawEnergyBolt(guiGraphics, machine.getEnergy());
+        drawActiveIcon(guiGraphics, machine.isActivated());
+        drawModeIcon(guiGraphics, machine.isCurrentMode());
+        drawProgressArrow(guiGraphics, machine.getProgress());
 
         guiGraphics.drawString(font, I18n.get(ModContent.REPLICATOR_BLOCK.get().getDescriptionId()), 8, 6, 0x404040, false);
     }
 
     private void drawEnergyBolt(GuiGraphics guiGraphics, int energy) {
-        if(replicator.getEnergy() == 0) {
+        if(machine.getEnergy() == 0) {
             guiGraphics.blit(GUI, 127, 58, 176, 114, 15, 20);
         } else {
             double percentage = energy * 100.0F / 1000000;  // i know this is dumb
@@ -114,23 +116,23 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
         int yAxis = (mouseY - (height - imageHeight) / 2);
 
         if(xAxis >= 26 && xAxis <= 39 && yAxis >= 20 && yAxis <= 75) {
-            if (!replicator.getTank().isEmpty()) {
-                drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(I18n.get(replicator.getTank().getFluidInTank(0).getDescriptionId())).withStyle(ChatFormatting.GOLD), Component.literal(I18n.get("youmatter.gui.umatter.description", replicator.getTank().getFluid().getAmount()))));
+            if (!machine.getTank().isEmpty()) {
+                drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(I18n.get(machine.getTank().getFluidInTank(0).getDescriptionId())).withStyle(ChatFormatting.GOLD), Component.literal(I18n.get("youmatter.gui.umatter.description", machine.getTank().getFluid().getAmount()))));
             } else {
-                drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(I18n.get("youmatter.gui.umatter.title")), Component.literal(I18n.get("youmatter.gui.umatter.description", replicator.getTank().getFluid().getAmount()))));
+                drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(I18n.get("youmatter.gui.umatter.title")), Component.literal(I18n.get("youmatter.gui.umatter.description", machine.getTank().getFluid().getAmount()))));
             }
         }
 
         if(xAxis >= 127 && xAxis <= 142 && yAxis >= 59 && yAxis <= 79) {
-            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(I18n.get("youmatter.gui.energy.title")), Component.literal(I18n.get("youmatter.gui.energy.description", replicator.getEnergy()))));
+            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(I18n.get("youmatter.gui.energy.title")), Component.literal(I18n.get("youmatter.gui.energy.description", machine.getEnergy()))));
         }
 
         if(xAxis >= 148 && xAxis <= 167 && yAxis >= 7 && yAxis <= 27) {
-            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(replicator.isActivated() ? I18n.get("youmatter.gui.active") : I18n.get("youmatter.gui.paused")), Component.literal(I18n.get("youmatter.gui.clicktochange"))));
+            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(machine.isActivated() ? I18n.get("youmatter.gui.active") : I18n.get("youmatter.gui.paused")), Component.literal(I18n.get("youmatter.gui.clicktochange"))));
         }
 
         if(xAxis >= 148 && xAxis <= 167 && yAxis >= 31 && yAxis <= 51) {
-            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(replicator.isCurrentMode() ? I18n.get("youmatter.gui.performInfiniteRuns") : I18n.get("youmatter.gui.performSingleRun")), Component.literal(I18n.get("youmatter.gui.clicktochange"))));
+            drawTooltip(guiGraphics, mouseX, mouseY, Arrays.asList(Component.literal(machine.isCurrentMode() ? I18n.get("youmatter.gui.performInfiniteRuns") : I18n.get("youmatter.gui.performSingleRun")), Component.literal(I18n.get("youmatter.gui.clicktochange"))));
         }
     }
 
@@ -222,27 +224,27 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
             if(xAxis >= 80 && xAxis <= 85 && yAxis >= 21 && yAxis <= 31) {
                 //Playing Click sound
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-                replicator.renderPrevious();
+                machine.renderPrevious();
                 //Sending packet to server
                 PacketDistributor.sendToServer(new PacketShowPrevious());
             } else if(xAxis >= 108 && xAxis <= 113 && yAxis >= 21 && yAxis <= 31) {
                 //Playing Click sound
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-                replicator.renderNext();
+                machine.renderNext();
                 //Sending packet to server
                 PacketDistributor.sendToServer(new PacketShowNext());
             } else if(xAxis >= 148 && xAxis <= 167 && yAxis >= 7 && yAxis <= 27) {
                 //Playing Click sound
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-                replicator.setActivated(!replicator.isActivated());
+                machine.setActivated(!machine.isActivated());
                 //Sending packet to server
-                PacketDistributor.sendToServer(new PacketChangeSettingsReplicatorServer(replicator.isActivated(), replicator.isCurrentMode()));
+                PacketDistributor.sendToServer(new PacketChangeSettingsReplicatorServer(machine.isActivated(), machine.isCurrentMode()));
             } else if(xAxis >= 148 && xAxis <= 167 && yAxis >= 31 && yAxis <= 51) {
                 //Playing Click sound
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-                replicator.setCurrentMode(!replicator.isCurrentMode());
+                machine.setCurrentMode(!machine.isCurrentMode());
                 //Sending packet to server
-                PacketDistributor.sendToServer(new PacketChangeSettingsReplicatorServer(replicator.isActivated(), replicator.isCurrentMode()));
+                PacketDistributor.sendToServer(new PacketChangeSettingsReplicatorServer(machine.isActivated(), machine.isCurrentMode()));
             }
         }
         return true;
