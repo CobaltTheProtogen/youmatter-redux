@@ -185,7 +185,7 @@ public class EncoderBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         // Ensure the isActive state remains consistent if conditions are met
-        isActive = myEnergyStorage != null && myEnergyStorage.getEnergyStored() >= YMConfig.CONFIG.energyEncoder.get() && !queue.isEmpty() && inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem;
+        isActive = myEnergyStorage != null && getEnergy() >= YMConfig.CONFIG.energyEncoder.get() && !queue.isEmpty() && inventory.getStackInSlot(1).getItem() instanceof ThumbDriveItem;
 
         // Update block state based on isActive variable
         level.setBlock(pos, state.setValue(EncoderBlock.ACTIVE, isActive), 3);

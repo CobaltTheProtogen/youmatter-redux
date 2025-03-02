@@ -77,7 +77,7 @@ public class PacketHandler {
         public static void handle(final PacketShowNext data, final IPayloadContext ctx) {
             ctx.enqueueWork(() -> {
                 if (ctx.player().containerMenu instanceof ReplicatorMenu openContainer) {
-                    openContainer.machine.renderNext();
+                   // openContainer.machine.renderNext();
                 }
             });
         }
@@ -90,7 +90,7 @@ public class PacketHandler {
         public static void handle(final PacketShowPrevious data, final IPayloadContext ctx) {
             ctx.enqueueWork(() -> {
                 if (ctx.player().containerMenu instanceof ReplicatorMenu openContainer) {
-                    openContainer.machine.renderPrevious();
+                  // openContainer.machine.renderPrevious();
                 }
             });
         }

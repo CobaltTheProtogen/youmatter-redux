@@ -66,7 +66,7 @@ public class MachineBlock extends BaseEntityBlock {
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        return codec();
+        return null;
     }
 
     @Override

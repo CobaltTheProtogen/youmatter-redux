@@ -46,7 +46,7 @@ public class ReplicatorMenu extends AbstractContainerMenu {
         Level level = machine.getLevel();
         BlockPos pos = machine.getBlockPos();
 
-        return level.getBlockState(pos).getBlock() instanceof MachineBlock && machine.getMachineType() == MachineType.REPLICATOR && player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D;
+        return level.getBlockState(pos).getBlock() instanceof MachineBlock block && block.getMachineType() == MachineType.REPLICATOR && player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D;
     }
 
     private void addPlayerSlots(IItemHandler itemHandler) {

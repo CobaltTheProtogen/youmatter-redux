@@ -3,12 +3,8 @@ package com.kobaltromero.youmatter_redux.block_entities;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.kobaltromero.youmatter_redux.YMConfig;
-import com.kobaltromero.youmatter_redux.blocks.basic.producer.ProducerMenu;
 import com.kobaltromero.youmatter_redux.blocks.generic.MachineBlock;
-import com.kobaltromero.youmatter_redux.blocks.replicator.ReplicatorMenu;
 import com.kobaltromero.youmatter_redux.blocks.replicator.RestrictedItemHandler;
-import com.kobaltromero.youmatter_redux.components.ThumbDriveContents;
 import com.kobaltromero.youmatter_redux.util.*;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
@@ -21,9 +17,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,26 +25,23 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import com.kobaltromero.youmatter_redux.ModContent;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MachineBlockEntity extends BlockEntity implements MenuProvider {
 
     //TODO: Finish Generic MachineBlockEntity class. I promise I know what I am doing. Don't judge me.
 
-    private MachineBlock machineBlock;
-
-    private int max_energy;
+    public MachineBlock machine = (MachineBlock) this.getBlockState().getBlock();
+    public int max_energy;
     private ITier tier;
-    private MachineType machineType;
+    private MachineType type;
 
-    private static final int MAX_UMATTER = 16_000;
+    public final int MAX_UMATTER = 16_000;
 
 
     private boolean currentMode = true;
@@ -58,18 +49,16 @@ public class MachineBlockEntity extends BlockEntity implements MenuProvider {
     private boolean isActivated = false;
     private boolean lastSignal;
 
-    private boolean isActive = false;
-    private boolean containsFluid = false;
+    public boolean isActive = false;
+    public boolean containsFluid = false;
 
     public MachineBlockEntity(BlockPos pos, BlockState state) {
         super(ModContent.MACHINE_BLOCK_ENTITY.get(), pos, state);
-        if(state.getBlock() instanceof MachineBlock) {
-            this.machineBlock = (MachineBlock) state.getBlock();
-            this.max_energy = machineBlock.getMaxEnergy();
-            this.tier = machineBlock.getTier();
-            this.machineType = machineBlock.getMachineType();
-        }
+        this.max_energy = machine.getMaxEnergy();
+        this.type = machine.getMachineType();
+        this.tier = machine.getTier();
     }
+
 
     public boolean isCurrentMode() {
         return currentMode;
@@ -104,10 +93,6 @@ public class MachineBlockEntity extends BlockEntity implements MenuProvider {
     public float getProbability() {
         return tier.getProbability();
     }
-    
-    public MachineType getMachineType() {
-        return machineType;
-    }
 
     public boolean getLastSignal() {
         return lastSignal;
@@ -130,6 +115,10 @@ public class MachineBlockEntity extends BlockEntity implements MenuProvider {
         return tank;
     }
 
+    public ITier getTier() {
+        return tier;
+    }
+
     private final IFluidHandler fluidHandler = new IFluidHandler() {
         @Override
         public int getTanks() {
@@ -149,7 +138,7 @@ public class MachineBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
-            if(getMachineType() == MachineType.REPLICATOR) {
+            if(machine.getMachineType() == MachineType.REPLICATOR) {
                 return stack.getFluid().isSame(ModContent.UMATTER.get());
             } else {
                 return false;
@@ -158,7 +147,7 @@ public class MachineBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public int fill(FluidStack resource, FluidAction action) {
-            if (getMachineType() == MachineType.REPLICATOR) {
+            if (machine.getMachineType() == MachineType.REPLICATOR) {
                 if (resource.getFluid().isSame(ModContent.UMATTER.get())) {
                     if (MAX_UMATTER - getTank().getFluidAmount() < resource.getAmount()) {
                         return tank.fill(new FluidStack(resource.getFluid(), MAX_UMATTER), action);
@@ -200,14 +189,14 @@ public class MachineBlockEntity extends BlockEntity implements MenuProvider {
 
     public RestrictedItemHandler restrictedInventory = new RestrictedItemHandler(inventory);
 
-    private List<ItemStack> cachedItems;
+    public List<ItemStack> cachedItems;
 
     public int getEnergy() {
         return myEnergyStorage.getEnergyStored();
     }
 
     public void setEnergy(int energy) {
-        if(tier != Tier.CREATIVE) {
+        if(getTier() != Tier.CREATIVE) {
             myEnergyStorage.setEnergy(energy);
         } else {
             myEnergyStorage.setEnergy(max_energy);
@@ -225,7 +214,7 @@ public class MachineBlockEntity extends BlockEntity implements MenuProvider {
         setChanged();
     }
 
-    private final MyEnergyStorage myEnergyStorage = new MyEnergyStorage(this, max_energy, Integer.MAX_VALUE);
+    public final MyEnergyStorage myEnergyStorage = new MyEnergyStorage(this, max_energy, Integer.MAX_VALUE);
 
     @Override
     public void setRemoved() {
@@ -271,58 +260,87 @@ public class MachineBlockEntity extends BlockEntity implements MenuProvider {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    private int currentPartTick = 0;
+    public int currentPartTick = 0;
 
     // Current displayed item index -> cachedItems
-    private int currentIndex = 0;
+    public int currentIndex = 0;
     private ItemStack currentItem;
 
     public static void tick(Level level, BlockPos pos, BlockState state, MachineBlockEntity be) {
-        be.tick(level, pos, state);
+        if (level != null) {
+            be.tick(level, pos, state);
+        }
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
-        if (level.isClientSide()) return;
-        switch (getMachineType()) {
-            case PRODUCER -> producerFunctionality(level, pos, state);
-            case REPLICATOR -> replicatorFunctionality(level, pos, state);
+        if (type != null) {
+            type.performAction(level, pos, state, this);
         }
     }
 
+    public Object[] getNeighborTileEntity(Level level, BlockPos pos) {
+        Object[] result = null;
 
-    public void producerFunctionality(Level level, BlockPos pos, BlockState state) {
-        if (currentPartTick == 40) { // Machine runs every 2 seconds.
-            if (isActivated() && getEnergy() >= (max_energy * 0.3f) && tank.getFluidAmount() <= MAX_UMATTER) {
-                if (Math.random() < getProbability()) {
-                    tank.fill(new FluidStack(ModContent.UMATTER.get(), 1 * (int) getBaseAmplifier()), IFluidHandler.FluidAction.EXECUTE);
+        for (Direction facing : Direction.values()) {
+            BlockPos offsetPos = pos.relative(facing);
+            BlockEntity offsetBe = level.getBlockEntity(offsetPos);
+
+            if (offsetBe != null) {
+                // Prioritize Replicator
+                if (offsetBe.getBlockState().getBlock() instanceof MachineBlock machine && machine.getMachineType() == MachineType.REPLICATOR) {
+                    return new Object[]{
+                            offsetPos,
+                            facing
+                    }; // position, facing
                 }
-                if (tier != Tier.CREATIVE) {
-                    myEnergyStorage.extractEnergy(Math.round(getEnergy() / 3f), false);
+
+                IFluidHandler h = this.level.getCapability(Capabilities.FluidHandler.BLOCK, offsetPos, facing);
+                if (h != null && h.fill(new FluidStack(ModContent.UMATTER.get(), 500), IFluidHandler.FluidAction.SIMULATE) > 0) {
+                    if (result == null) {
+                        result = new Object[]{
+                                offsetPos,
+                                facing
+                        };
+                    }
                 }
             }
-
-            // Auto-outputting U-Matter
-            Object[] neighborTE = getNeighborTileEntity(pos);
-            if (neighborTE != null) {
-                IFluidHandler h = level.getCapability(Capabilities.FluidHandler.BLOCK, ((BlockPos) neighborTE[0]), (Direction) neighborTE[1]);
-                if (h != null) {
-                    int amountToDrain = Math.min(tank.getFluidAmount(), 1000); // set a maximum output of 1000 mB (every two seconds)
-                    tank.drain(h.fill(new FluidStack(ModContent.UMATTER.get(), amountToDrain), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
-                }
-            }
-            currentPartTick = 0;
-        } else {
-            currentPartTick++;
         }
 
-        isActive = myEnergyStorage != null && getEnergy() >= (max_energy * 0.3f) && isActivated();
-        containsFluid = tank != null && tank.getFluidAmount() > 0;
-
-        level.setBlock(pos, state.setValue(MachineBlock.ACTIVE, isActive).setValue(MachineBlock.CONTAINS_FLUID, containsFluid), 3);
-
+        return result; // found nothing or return the first non-replicator that can take fluid
     }
 
-    public void replicatorFunctionality(Level level, BlockPos pos, BlockState state) {
+
+
+    @Override
+    public Component getDisplayName() {
+        return Component.literal(I18n.get(ModContent.BASIC_PRODUCER_BLOCK.get().getDescriptionId())).withColor(0x121213);
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int windowID, Inventory playerInventory, Player playerEntity) {
+        return type.createMenu(windowID, level, worldPosition, playerInventory, playerEntity);
+    }
+
+    public RestrictedItemHandler getRestrictedItemHandler() {
+        return restrictedInventory;
+    }
+
+    public ItemStackHandler getItemHandler() {
+        return inventory;
+    }
+
+    public IEnergyStorage getEnergyHandler() {
+        return myEnergyStorage;
+    }
+
+    public IFluidHandler getFluidHandler() {
+        return fluidHandler;
+    }
+}
+
+
+/* public void replicatorFunctionality(Level level, BlockPos pos, BlockState state) {
         if (currentPartTick == 5) {
             currentPartTick = 0;
             if (inventory == null) return;
@@ -407,97 +425,4 @@ public class MachineBlockEntity extends BlockEntity implements MenuProvider {
         level.setBlock(pos, state.setValue(MachineBlock.ACTIVE, isActive).setValue(MachineBlock.CONTAINS_FLUID, containsFluid), 3);
         currentPartTick++;
     }
-
-    public void renderPrevious() {
-        if(cachedItems != null){
-            if (currentIndex > 0) {
-                currentIndex = currentIndex - 1;
-            } else {
-                currentIndex = cachedItems.size() - 1;
-            }
-        }
-    }
-
-    public void renderNext() {
-        if(cachedItems != null){
-            if (currentIndex < cachedItems.size() - 1) {
-                currentIndex = currentIndex + 1;
-            } else {
-                currentIndex = 0;
-            }
-        }
-    }
-
-    private void renderItem(List<ItemStack> cache, int index) {
-        if(index <= cache.size() - 1 && index >= 0) {
-            ItemStack itemStack = cache.get(index);
-            if(itemStack != null) {
-                inventory.setStackInSlot(2, itemStack);
-            }
-        }
-    }
-
-
-    private Object[] getNeighborTileEntity(BlockPos ProducerPos) {
-        Object[] result = null;
-
-        for (Direction facing : Direction.values()) {
-            BlockPos offsetPos = ProducerPos.relative(facing);
-            BlockEntity offsetBe = level.getBlockEntity(offsetPos);
-
-            if (offsetBe != null) {
-                // Prioritize Replicator
-                if (offsetBe instanceof MachineBlockEntity machine && machine.getMachineType() == MachineType.REPLICATOR) {
-                    return new Object[]{
-                            offsetPos,
-                            facing
-                    }; // position, facing
-                }
-
-                IFluidHandler h = level.getCapability(Capabilities.FluidHandler.BLOCK, offsetPos, facing);
-                if (h != null && h.fill(new FluidStack(ModContent.UMATTER.get(), 500), IFluidHandler.FluidAction.SIMULATE) > 0) {
-                    if (result == null) {
-                        result = new Object[]{
-                                offsetPos,
-                                facing
-                        };
-                    }
-                }
-            }
-        }
-
-        return result; // found nothing or return the first non-replicator that can take fluid
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.literal(I18n.get(ModContent.BASIC_PRODUCER_BLOCK.get().getDescriptionId())).withColor(0x121213);
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int windowID, Inventory playerInventory, Player playerEntity) {
-        if(getMachineType() == MachineType.PRODUCER) {
-            return new ProducerMenu(windowID, level, worldPosition, playerInventory, playerEntity);
-        } else if(getMachineType() == MachineType.REPLICATOR) {
-            return new ReplicatorMenu(windowID, level, worldPosition, playerInventory, playerEntity);
-        }
-        return null;
-    }
-
-    public RestrictedItemHandler getRestrictedItemHandler() {
-        return restrictedInventory;
-    }
-
-    public ItemStackHandler getItemHandler() {
-        return inventory;
-    }
-
-    public IEnergyStorage getEnergyHandler() {
-        return myEnergyStorage;
-    }
-
-    public IFluidHandler getFluidHandler() {
-        return fluidHandler;
-    }
-}
+*/

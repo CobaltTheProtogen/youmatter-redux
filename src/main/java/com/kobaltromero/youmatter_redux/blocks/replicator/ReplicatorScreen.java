@@ -224,13 +224,13 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
             if(xAxis >= 80 && xAxis <= 85 && yAxis >= 21 && yAxis <= 31) {
                 //Playing Click sound
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-                machine.renderPrevious();
+               // machine.renderPrevious();
                 //Sending packet to server
                 PacketDistributor.sendToServer(new PacketShowPrevious());
             } else if(xAxis >= 108 && xAxis <= 113 && yAxis >= 21 && yAxis <= 31) {
                 //Playing Click sound
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-                machine.renderNext();
+              //  machine.renderNext();
                 //Sending packet to server
                 PacketDistributor.sendToServer(new PacketShowNext());
             } else if(xAxis >= 148 && xAxis <= 167 && yAxis >= 7 && yAxis <= 27) {

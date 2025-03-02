@@ -80,7 +80,7 @@ public class ModContent {
 
     public static final DeferredHolder<MenuType<?>, MenuType<ProducerMenu>> PRODUCER_MENU = MENU_TYPES.register("producer", () -> IMenuTypeExtension.create((windowId, inv, data) -> new ProducerMenu(windowId, inv.player.level(), data.readBlockPos(), inv, inv.player)));
     public static final DeferredHolder<MenuType<?>, MenuType<ReplicatorMenu>> REPLICATOR_MENU = MENU_TYPES.register("replicator", () -> IMenuTypeExtension.create((windowId, inv, data) -> new ReplicatorMenu(windowId, inv.player.level(), data.readBlockPos(), inv, inv.player)));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MachineBlockEntity>> MACHINE_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("producer", () -> BlockEntityType.Builder.of(MachineBlockEntity::new, BASIC_PRODUCER_BLOCK.get(), ADVANCED_PRODUCER_BLOCK.get(), ELITE_PRODUCER_BLOCK.get(), ULTIMATE_PRODUCER_BLOCK.get(), CREATIVE_PRODUCER_BLOCK.get(), REPLICATOR_BLOCK.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MachineBlockEntity>> MACHINE_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("machine", () -> BlockEntityType.Builder.of(MachineBlockEntity::new, BASIC_PRODUCER_BLOCK.get(), ADVANCED_PRODUCER_BLOCK.get(), ELITE_PRODUCER_BLOCK.get(), ULTIMATE_PRODUCER_BLOCK.get(), CREATIVE_PRODUCER_BLOCK.get(), REPLICATOR_BLOCK.get()).build(null));
 
     public static final DeferredHolder<FluidType, FluidType> STABILIZER_TYPE = FLUID_TYPES.register("stabilizer", StabilizerFluidType::new);
     public static final DeferredHolder<Fluid, FlowingFluid> STABILIZER = FLUIDS.register("stabilizer", () -> new BaseFlowingFluid.Source(ModContent.STABILIZER_PROPERIES));
